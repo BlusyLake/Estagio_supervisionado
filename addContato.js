@@ -1,57 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, FlatList, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Contatos() {
+export default function Contatos() { 
     const navigation = useNavigation();
-    
+
     const [nome, setNome] = useState('');
     const [celular, setCelular] = useState('');
     const [contatos, setContatos] = useState([]);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [mensagemModal, setMensagemModal] = useState('');
 
     useEffect(() => {
         carregarContatos();
     }, []);
 
     const salvarContato = async () => {
-        const numeroValido = /^\d{10,11}$/.test(celular); 
-        if (nome && celular) {
-            if (!numeroValido) {
-                setMensagemModal('Por favor, insira um número de celular válido com 10 ou 11 dígitos.');
-                setModalVisible(true);
-                return;
-            }
-            // Verifica se o número já existe na lista de contatos
-            const numeroExistente = contatos.find(contato => contato.celular === celular);
-            if (numeroExistente) {
-                setMensagemModal('Esse número já está cadastrado!');
-                setModalVisible(true);
-                return;
-            }
+        if (nome === '' || celular === '') {
+            Alert.alert('Erro', 'Por favor, preencha ambos os campos.');
+            return;  // Garante que o código não continua
+        }
 
-            // Verifica se já existem 4 contatos
-            if (contatos.length >= 6) {
-                setMensagemModal('Você pode salvar no máximo 4 contatos!');
-                setModalVisible(true);
-                return;
-            }
+        const novoContato = { id: Date.now().toString(), nome, celular };
 
-            // Cria um novo contato
-            const novoContato = { id: Date.now().toString(), nome, celular };
-        
-            const novosContatos = [...contatos, novoContato];
-            setContatos(novosContatos);
-        
-            await AsyncStorage.setItem('contatos', JSON.stringify(novosContatos));
-        
+        try {
+            const contatosSalvos = await AsyncStorage.getItem('contatos');
+            let listaContatos = contatosSalvos ? JSON.parse(contatosSalvos) : [];
+
+            listaContatos.push(novoContato);
+
+            await AsyncStorage.setItem('contatos', JSON.stringify(listaContatos));
+            setContatos(listaContatos); // Atualiza a lista na UI
+
             setNome('');
             setCelular('');
-        } else {
-            setMensagemModal('Por favor, preencha todos os campos');
-            setModalVisible(true);
+            Alert.alert('Sucesso', 'Contato salvo com sucesso!');
+        } catch (error) {
+            Alert.alert('Erro', 'Não foi possível salvar o contato.');
         }
     };
 
@@ -62,14 +46,8 @@ export default function Contatos() {
                 setContatos(JSON.parse(contatosSalvos));
             }
         } catch (error) {
-            console.error(error);
+            Alert.alert('Erro', 'Não foi possível carregar os contatos.');
         }
-    };
-
-    const excluirContato = async (id) => {
-        const novosContatos = contatos.filter(contato => contato.id !== id);
-        setContatos(novosContatos);
-        await AsyncStorage.setItem('contatos', JSON.stringify(novosContatos));
     };
 
     return (
@@ -111,43 +89,6 @@ export default function Contatos() {
             <TouchableOpacity style={styles.botaoSalvar} onPress={salvarContato}>
                 <Text style={styles.textoSalvar}>Salvar</Text>
             </TouchableOpacity>
-
-            <FlatList
-                data={contatos}
-                keyExtractor={(item) => item.id}
-                style={styles.contatosList}
-                renderItem={({ item }) => (
-                    <View style={styles.contactItem}>
-                        <View style={styles.contactInfo}>
-                            <Text style={styles.contactText}>{item.nome}</Text>
-                            <Text style={styles.contactText}>{item.celular}</Text>
-                        </View>
-                        <TouchableOpacity onPress={() => excluirContato(item.id)}>
-                            <Text style={styles.excluir}>Excluir</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            />
-
-            {/* Modal para alertas */}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalView}>
-                        <Text style={styles.modalText}>{mensagemModal}</Text>
-                        <TouchableOpacity
-                            style={styles.closeButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <Text style={styles.closeButtonText}>Fechar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
         </View>
     );
 }
@@ -219,58 +160,5 @@ const styles = StyleSheet.create({
         color: "#FFF",
         borderRadius: 10,
         textAlign: "center",
-    },
-    contatosList: {
-        marginTop: 30,
-        width: '100%',
-    },
-    contactItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        padding: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        width: '100%',
-        alignItems: 'center',
-    },
-    contactInfo: {
-        flex: 1,
-    },
-    contactText: {
-        fontSize: 18,
-    },
-    excluir: {
-        color: 'red',
-        fontWeight: 'bold',
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo semi-transparente
-    },
-    modalView: {
-        width: '80%',
-        padding: 20,
-        backgroundColor: '#F9497D', // Cor rosa para o modal
-        borderRadius: 10,
-        alignItems: 'center',
-    },
-    modalText: {
-        color: '#FFFFFF', // Texto branco
-        fontSize: 18,
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    closeButton: {
-        backgroundColor: '#FF6F91', // Cor do botão de fechar
-        borderRadius: 5,
-        padding: 10,
-        width: '100%',
-        alignItems: 'center',
-    },
-    closeButtonText: {
-        color: '#FFFFFF', // Texto do botão de fechar
-        fontSize: 16,
     },
 });
