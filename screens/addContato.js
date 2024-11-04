@@ -3,6 +3,21 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, FlatList, M
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export const carregarContatos = async () => {
+    try{
+        const contatosSalvos = await AsyncStorage.getItem('contatos');
+        if (contatosSalvos) {
+            return JSON.parse(contatosSalvos);
+        }
+        return [];
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
+
+
 export default function Contatos() {
     const navigation = useNavigation();
     
@@ -17,7 +32,7 @@ export default function Contatos() {
     }, []);
 
     const salvarContato = async () => {
-        const numeroValido = /^\d{10,11}$/.test(celular); 
+        const numeroValido = true///^\d{10,15}$/.test(celular); 
         if (nome && celular) {
             if (!numeroValido) {
                 setMensagemModal('Por favor, insira um número de celular válido com 10 ou 11 dígitos.');
