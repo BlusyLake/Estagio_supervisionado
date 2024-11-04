@@ -32,7 +32,7 @@ export const handlePanic = async () => {
                 }
             }, {
                 headers: {
-                    'apikey': 'key'
+                    'apikey': 'B6D711FCDE4D4FD5936544120E713976'
                 }
             });
             console.log(`Mensagem enviada para ${contato.celular}:`, response.data);
