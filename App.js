@@ -1,8 +1,10 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Text, View, StatusBar, TouchableOpacity, Image, TextInput } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import * as Location from 'expo-location';
+
 import SosScreen from './screens/sos';
 import Configuracoes from './screens/configuracoes';
 import Contatos from './screens/contatos';
@@ -11,30 +13,67 @@ import HomePage from './screens/homePage';
 import Addcontatos from './screens/addContato';
 import ConfigBotao from './screens/configBotao';
 
-
-function DetailsScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Details!</Text>
-    </View>
-  );
-}
-
 function HomeScreen({ navigation }) {
-  const [name, setName] = useState(''); 
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      updateLocation();
+    }, 6000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const updateLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permissão para acessar a localização foi negada');
+        return;
+      }
+
+      let loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc.coords);
+      await sendLocation(loc);
+    } catch (error) {
+      console.error('Erro ao obter a localização:', error);
+    }
+  };
+
+  const sendLocation = async (loc) => {
+    const locationData = {
+      latitude: loc.coords.latitude,
+      longitude: loc.coords.longitude,
+    };
+
+    try {
+      const response = await fetch('https://realtime-location-api.onrender.com/localizacao/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(locationData),
+      });
+
+      const data = await response.json();
+      console.log('Resposta do servidor:', data);
+    } catch (error) {
+      console.error('Erro ao enviar localização:', error);
+    }
+  };
 
   return (
     <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
-      <Image
-        source={require('./viva.jpeg')}
-        style={{ width: '56%', height: 90 }}
-      />
-      <Image
-        source={require('./logo.jpeg')}
-        style={{ width: '100%', height: 250 }}
-      />
-      
-      
+      <Image source={require('./viva.jpeg')} style={{ width: '56%', height: 90 }} />
+      <Image source={require('./logo.jpeg')} style={{ width: '100%', height: 250 }} />
+
+      {location && (
+        <Text style={{ color: '#000', marginTop: 10 }}>
+          Localização Atual: {location.latitude}, {location.longitude}
+        </Text>
+      )}
+
       <Text style={{ textAlign: 'center', marginTop: '10%', color: '#000000B2', fontSize: 12 }}>
         Vamos nos conhecer!
       </Text>
@@ -42,7 +81,6 @@ function HomeScreen({ navigation }) {
         Como devemos chamar você?
       </Text>
 
-    
       <TextInput
         style={{
           backgroundColor: '#EDEFF1',
@@ -54,13 +92,12 @@ function HomeScreen({ navigation }) {
           marginTop: 20,
         }}
         value={name}
-        onChangeText={setName} 
+        onChangeText={setName}
       />
-      
-      
+
       <TouchableOpacity
         onPress={() => {
-          console.log('Nome do usuário:', name); 
+          console.log('Nome do usuário:', name);
           navigation.navigate('HomePage');
         }}
         style={{
@@ -86,17 +123,14 @@ function HomeScreen({ navigation }) {
         letterSpacing: -0.408,
         textAlign: 'center',
         color: '#000000',
-      }}> 
+      }}>
         Ao fazer login, você concorda com nossos Termos e Condições, saiba como usamos seus dados em nossa Política de Privacidade.
       </Text>
     </View>
   );
 }
 
-
-
 const HomeStack = createNativeStackNavigator();
-const SettingsStack = createNativeStackNavigator();
 
 function HomeStackScreen({ navigation }) {
   return (
@@ -125,7 +159,7 @@ function HomeStackScreen({ navigation }) {
         }}
       >
         <HomeStack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
-        <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }}/>
+        <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
         <HomeStack.Screen name="SOS" component={SosScreen} options={{ headerShown: false }} />
         <HomeStack.Screen name="calendario" component={Calendario} options={{ headerShown: false }} />
         <HomeStack.Screen name="configuracoes" component={Configuracoes} options={{ headerShown: false }} />
@@ -137,39 +171,10 @@ function HomeStackScreen({ navigation }) {
   );
 }
 
-function SettingsStackScreen() {
-  return (
-    <>
-      <StatusBar backgroundColor="#F9497D" barStyle="light-content" />
-
-      <SettingsStack.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#fff',
-            elevation: 0,
-            shadowOpacity: 0,
-            shadowOffset: { width: 0, height: 0 },
-            shadowRadius: 0,
-          },
-          headerTintColor: 'black',
-          headerShadowVisible: false,
-        }}
-      >
-        <SettingsStack.Screen name="Settings" component={SettingsScreen} />
-        <SettingsStack.Screen name="HomePage" component={HomePage} />
-      </SettingsStack.Navigator>
-    </>
-  );
-}
-
-
 export default function App() {
   return (
     <NavigationContainer>
-      <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
-        <SettingsStack.Screen name="HomeStack" component={HomeStackScreen} />
-        <SettingsStack.Screen name="SettingsStack" component={SettingsStackScreen} />
-      </SettingsStack.Navigator>
+      <HomeStackScreen />
     </NavigationContainer>
   );
 }
