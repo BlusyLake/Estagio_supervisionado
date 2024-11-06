@@ -20,7 +20,7 @@ function HomeScreen({ navigation }) {
   useEffect(() => {
     const intervalId = setInterval(() => {
       updateLocation();
-    }, 6000);
+    }, 60000); // Atualiza a localização a cada 1 minuto
 
     return () => clearInterval(intervalId);
   }, []);
@@ -35,13 +35,13 @@ function HomeScreen({ navigation }) {
 
       let loc = await Location.getCurrentPositionAsync({});
       setLocation(loc.coords);
-      await sendLocation(loc);
+      sendLocationToBackend(loc); // Envia a localização para o backend
     } catch (error) {
       console.error('Erro ao obter a localização:', error);
     }
   };
 
-  const sendLocation = async (loc) => {
+  const sendLocationToBackend = async (loc) => {
     const locationData = {
       latitude: loc.coords.latitude,
       longitude: loc.coords.longitude,
