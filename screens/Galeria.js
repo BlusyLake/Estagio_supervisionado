@@ -1,12 +1,26 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Dimensions, TouchableOpacity, Image } from "react-native";
-import { AntDesign, SimpleLineIcons, Feather, MaterialIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, SafeAreaView, Dimensions, TouchableOpacity, FlatList, Image } from "react-native";
+import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
-export default function Cofre() {
+// Dados para os cards
+const data = Array.from({ length: 25 }, (_, index) => ({ id: index + 1 }));
+
+export default function Galeria() {
     const navigation = useNavigation(); 
+    
+    const renderCard = ({ item }) => (
+        <View style={styles.card}>
+            <Image 
+                source={require('../assets/gallery.png')}
+                style={styles.cardImage} 
+            />
+   
+        </View>
+    );
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -14,24 +28,22 @@ export default function Cofre() {
                     <AntDesign name="left" size={width * 0.08} color="black" />
                 </TouchableOpacity>
                 
-                <Text style={[styles.title, { fontSize: width * 0.07 }]}>Cofre</Text>
+                <Text style={[styles.title, { fontSize: width * 0.07 }]}>Galeria</Text>
                 <TouchableOpacity>
                     <AntDesign name="camera" size={width * 0.08} color="black" />
                 </TouchableOpacity>
             </View>
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Galeria')}>
-                    <SimpleLineIcons name="picture" size={width * 0.14} color="black" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
-                    <MaterialIcons name="ondemand-video" size={width * 0.14} color="black" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.button}>
-                    <Feather name="trash-2" size={width * 0.14} color="black" />
-                </TouchableOpacity>
-            </View>
+            
+            <FlatList 
+                data={data}
+                renderItem={renderCard}
+                keyExtractor={item => item.id.toString()}
+                numColumns={3} 
+                contentContainerStyle={styles.cardsContainer}
+            />
+
             <View style={styles.footer}>
-                <TouchableOpacity  style={styles.footerIcon} >
+                <TouchableOpacity style={styles.footerIcon}>
                     <Image source={require('../assets/adicionar1.png')} style={{width: 40, height: 40}}/>
                 </TouchableOpacity>
             </View>
@@ -58,22 +70,31 @@ const styles = StyleSheet.create({
         color: 'black',
         fontWeight: 'bold',
     },
-    buttonContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
+    cardsContainer: {
         paddingHorizontal: 10,
     },
-    button: {
+    card: {
         backgroundColor: '#FFFFFF99',
-        margin: 10,
+        margin: 8,
         borderRadius: 10,
-        padding: 10,
-        height: height * 0.18,
-        width: width * 0.42,
+        height: height * 0.15,
+        width: width * 0.27,
         borderColor: '#A9A4A4',
         borderWidth: 1,
         justifyContent: 'center',
-        alignItems: 'center', 
+        alignItems: 'center',
+        overflow: 'hidden'
+    },
+    cardImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    cardText: {
+        marginTop: 5,
+        fontSize: width * 0.035,
+        color: 'black',
+        textAlign: 'center',
     },
     footer: {
         position: 'absolute',

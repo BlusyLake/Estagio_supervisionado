@@ -13,6 +13,7 @@ import HomePage from './screens/homePage';
 import Addcontatos from './screens/addContato';
 import ConfigBotao from './screens/configBotao';
 import Cofre from './screens/Cofre';
+import Galeria from './screens/Galeria'
 
 function HomeScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -168,6 +169,7 @@ function HomeStackScreen({ navigation }) {
         <HomeStack.Screen name="configBotao" component={ConfigBotao} options={{ headerShown: false }} />
         <HomeStack.Screen name="addcontatos" component={Addcontatos} options={{ headerShown: false }} />
         <HomeStack.Screen name="Cofre" component={Cofre} options={{ headerShown: false }} />
+        <HomeStack.Screen name="Galeria" component={Galeria} options={{ headerShown: false }} />
       </HomeStack.Navigator>
     </>
   );
