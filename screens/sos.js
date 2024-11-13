@@ -4,19 +4,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
 
-
 export default function SOS() {
   const navigation = useNavigation();
 
-  
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return gestureState.dy > 30; 
+        return gestureState.dy > 30;
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dy > 30) {
-          navigation.navigate('HomePage'); 
+          navigation.navigate('HomePage');
         }
       },
     })
@@ -30,12 +28,21 @@ export default function SOS() {
         start={{ x: 0, y: 1 }}
         end={{ x: 0, y: 0 }}
         style={styles.container}>
-          
-        <TouchableOpacity 
-          style={{ width: '100%' }} 
-          onPress={() => navigation.navigate('configuracoes')} 
+
+        
+        <TouchableOpacity
+          style={{ width: '100%' }}
+          onPress={() => navigation.navigate('configuracoes')}
         >
-          <Image source={require('../assets/menu.png')} style={styles.imageMenu} />
+          <Image source={require('../assets/engrenagem.png')} style={styles.imageMenu} />
+        </TouchableOpacity>
+
+        
+        <TouchableOpacity
+          style={styles.rightButton}  
+          onPress={() => navigation.navigate('informacoes')}  
+        >
+          <Image source={require('../assets/lampada.png')} style={styles.imageRightButton} />
         </TouchableOpacity>
 
         <TouchableOpacity style={{ width: '100%', alignItems: 'center', position: 'absolute' }}>
@@ -44,20 +51,13 @@ export default function SOS() {
 
         <Image source={require('../assets/viva.png')} style={styles.image} />
         <View style={styles.esfera}></View>
-        
+
         <TouchableOpacity style={{ position: 'relative', justifyContent: 'center', marginTop: '25%', height: '50%', width: '30%' }}>
           <Image source={require('../assets/circulo.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, borderRadius: 1000, width: '110%', height: '105%' }} />
           <Image source={require('../assets/circulo2.png')} style={{ position: 'absolute', alignSelf: 'center', borderRadius: 1000, width: '160%', height: "150%" }} />
-          <Image source={require('../assets/sino.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, width: '80%', height: '60%' }} />
+          <Image source={require('../assets/emergencia.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, width: '80%', height: '65%' }} />
         </TouchableOpacity>
-        <Text style={{ color: 'white', marginTop: '6%', fontSize: 18 }}>Pânico</Text>
-
-        <TouchableOpacity style={{ position: 'relative', justifyContent: 'center', marginTop: '15%', height: '50%', width: '30%' }}>
-          <Image source={require('../assets/circulo.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, borderRadius: 1000, width: '55%', height: '55%' }} />
-          <Image source={require('../assets/circulo2.png')} style={{ position: 'absolute', alignSelf: 'center', borderRadius: 10000, width: '80%', height: "70%" }} />
-          <Image source={require('../assets/emergencia.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, width: '45%', height: "35%" }} />
-        </TouchableOpacity>
-        <Text style={{ color: 'white', marginTop: '-5%', fontSize: 15 }}>Emergência</Text>
+        <Text style={{ color: 'white', marginTop: '6%', fontSize: 18 }}>Emergência</Text>
       </LinearGradient>
     </View>
   );
@@ -103,5 +103,14 @@ const styles = StyleSheet.create({
     marginTop: '13.8%',
     width: '5%',
     height: 12,
+  },
+  rightButton: {
+    position: 'absolute',
+    top: '24%', 
+    right: '4%', 
+  },
+  imageRightButton: {
+    width: 28, 
+    height: 28, 
   },
 });

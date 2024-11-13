@@ -55,7 +55,7 @@ export default function HomePage({ navigation }) {
 
             <TouchableOpacity 
                 style={styles.navButtonEsquerda} 
-                onPress={() => navigation.navigate('')} 
+                onPress={() => navigation.navigate('perguntas')} 
             >
                 <Image source={require('../assets/bonequinha.png')} style={styles.navboneca} />
             </TouchableOpacity>

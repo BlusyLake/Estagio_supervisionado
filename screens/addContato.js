@@ -91,7 +91,7 @@ export default function Contatos() {
         <View style={styles.view}>
             <TouchableOpacity 
                 style={styles.sair} 
-                onPress={() => navigation.navigate('configuracoes')} 
+                onPress={() => navigation.navigate('contatos')} 
             >
                 <Image source={require('../assets/setaesquerda.png')} style={styles.setaesquerda} />
             </TouchableOpacity>

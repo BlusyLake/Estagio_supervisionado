@@ -34,7 +34,7 @@ export default function Configuracoes() {
                 
                 <TouchableOpacity 
                     style={styles.botao}
-                    onPress={() => navigation.navigate('configBotao')} // Navegação para configurar botões
+                    onPress={() => navigation.navigate('configBotao')} 
                 >
                     <Text style={styles.textoBotao}> Configurar botões</Text> 
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />
