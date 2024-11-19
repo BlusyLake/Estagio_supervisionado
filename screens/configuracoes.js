@@ -26,7 +26,9 @@ export default function Configuracoes() {
                     <Image source={require('../assets/contato.png')} style={styles.imagem} />
                 </TouchableOpacity>
                 
-                <TouchableOpacity style={styles.botao}>
+                <TouchableOpacity style={styles.botao}
+                onPress={() => navigation.navigate('cofre')}>
+                     
                     <Text style={styles.textoBotao}> Cofre </Text> 
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />
                     <Image source={require('../assets/cadeado.png')} style={styles.imagem} />
