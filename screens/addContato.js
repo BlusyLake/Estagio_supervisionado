@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const carregarContatos = async () => {
-    try{
+    try {
         const contatosSalvos = await AsyncStorage.getItem('contatos');
         if (contatosSalvos) {
             return JSON.parse(contatosSalvos);
@@ -15,8 +15,6 @@ export const carregarContatos = async () => {
         return [];
     }
 };
-
-
 
 export default function Contatos() {
     const navigation = useNavigation();
@@ -32,13 +30,16 @@ export default function Contatos() {
     }, []);
 
     const salvarContato = async () => {
-        const numeroValido = true///^\d{10,15}$/.test(celular); 
+        // Regex para verificar se o número contém apenas dígitos e tem entre 10 e 11 caracteres.
+        const numeroValido = /^\d{10,11}$/.test(celular);
+
         if (nome && celular) {
             if (!numeroValido) {
                 setMensagemModal('Por favor, insira um número de celular válido com 10 ou 11 dígitos.');
                 setModalVisible(true);
                 return;
             }
+
             // Verifica se o número já existe na lista de contatos
             const numeroExistente = contatos.find(contato => contato.celular === celular);
             if (numeroExistente) {
@@ -56,17 +57,27 @@ export default function Contatos() {
 
             // Cria um novo contato
             const novoContato = { id: Date.now().toString(), nome, celular };
-        
+
             const novosContatos = [...contatos, novoContato];
             setContatos(novosContatos);
-        
+
             await AsyncStorage.setItem('contatos', JSON.stringify(novosContatos));
-        
+
             setNome('');
             setCelular('');
         } else {
             setMensagemModal('Por favor, preencha todos os campos');
             setModalVisible(true);
+        }
+    };
+
+    const handleCelularChange = (text) => {
+        // Remove caracteres não numéricos
+        const apenasNumeros = text.replace(/\D/g, '');
+
+        // Limita a quantidade de caracteres a 11
+        if (apenasNumeros.length <= 11) {
+            setCelular(apenasNumeros);
         }
     };
 
@@ -115,9 +126,10 @@ export default function Contatos() {
                     <TextInput
                         style={styles.textInput}
                         value={celular}
-                        onChangeText={setCelular}
+                        onChangeText={handleCelularChange} // Chama a função para formatar o número
                         placeholder="Digite o celular"
-                        keyboardType="numeric" 
+                        keyboardType="numeric" // Apenas números no teclado
+                        maxLength={11} // Garante um limite de 11 caracteres
                     />
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />
                 </View>
@@ -166,6 +178,8 @@ export default function Contatos() {
         </View>
     );
 }
+
+
 
 const styles = StyleSheet.create({
     view: {

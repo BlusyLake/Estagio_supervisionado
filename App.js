@@ -134,13 +134,13 @@ function HomeScreen({ navigation }) {
 
 const HomeStack = createNativeStackNavigator();
 
-function HomeStackScreen({ navigation }) {
+function HomeStackScreen() {
   return (
     <>
       <StatusBar backgroundColor="#F9497D" barStyle="light-content" />
 
       <HomeStack.Navigator
-        screenOptions={{
+        screenOptions={({ navigation }) => ({
           headerStyle: {
             backgroundColor: '#fff',
             elevation: 0,
@@ -157,8 +157,10 @@ function HomeStackScreen({ navigation }) {
             >
               <Text style={{ color: '#808080', fontSize: 12 }}>Pular</Text>
             </TouchableOpacity>
+
+            
           ),
-        }}
+        })}
       >
         <HomeStack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
         <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />

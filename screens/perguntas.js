@@ -3,9 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, TextInput, StyleSheet, Image } 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-
-
-const FAQScreen = () => {
+const FAQScreen = ({ navigation }) => { // Adicionado 'navigation' como prop
   // Dados simulados de FAQ
   const faqData = [
     { id: '1', question: 'Como adicionar contatos de emergência ?', answer: 'A Responder.' },
@@ -46,7 +44,6 @@ const FAQScreen = () => {
   );
 
   return (
-
     <View style={styles.container}>
       {/* Header com Gradiente e bordas arredondadas */}
       <LinearGradient
@@ -57,7 +54,7 @@ const FAQScreen = () => {
       >
         <View style={styles.headerContent}>
           {/* Botão com imagem de seta à esquerda */}
-          <TouchableOpacity style={styles.arrowButton} onPress={() => console.log('Voltar')}>
+          <TouchableOpacity style={styles.arrowButton}  onPress={() => navigation.navigate('configuracoes')}> 
             <Icon name="chevron-left" size={40} color="#000" />
           </TouchableOpacity>
 

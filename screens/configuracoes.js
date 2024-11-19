@@ -34,11 +34,11 @@ export default function Configuracoes() {
                 
                 <TouchableOpacity 
                     style={styles.botao}
-                    onPress={() => navigation.navigate('configBotao')} 
+                    onPress={() => navigation.navigate('perguntas')} 
                 >
-                    <Text style={styles.textoBotao}> Configurar botões</Text> 
+                    <Text style={styles.textoBotao}> Perguntas frequentes</Text> 
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />
-                    <Image source={require('../assets/ativa.png')} style={styles.imagem} />
+                    <Image source={require('../assets/Ask.png')} style={styles.imagem} />
                 </TouchableOpacity>
             </View>
         </View>
