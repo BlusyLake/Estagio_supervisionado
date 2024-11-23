@@ -1,9 +1,26 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; 
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Linking } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { carregarContatos } from './addContato';
 
-export default function Contatos() { 
-    const navigation = useNavigation(); 
+export default function Contatos() {
+    const navigation = useNavigation();
+    const [contatos, setContatos] = useState([]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            const fetchContatos = async () => {
+                const contatosCarregados = await carregarContatos();
+                setContatos(contatosCarregados);
+            };
+            fetchContatos();
+        }, [])
+    );
+
+    const iniciarLigacao = (numero) => {
+        const tel = `tel:${numero}`;
+        Linking.openURL(tel).catch(err => console.error('Erro ao tentar fazer a ligação', err));
+    };
 
     return (
         <View style={styles.view}>
@@ -24,8 +41,21 @@ export default function Contatos() {
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />
                     <Image source={require('../assets/adicionar.png')} style={styles.imagem} />
                 </TouchableOpacity>
-               
             </View>
+            <FlatList
+                data={contatos}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <TouchableOpacity 
+                        style={styles.contactItem}
+                        onPress={() => iniciarLigacao(item.celular)}
+                    >
+                        <Text style={styles.contactText}>{item.nome}</Text>
+                        <Text style={styles.contactText}>{item.celular}</Text>
+                    </TouchableOpacity>
+                )}
+                style={styles.contatosList}
+            />
         </View>
     );
 }
@@ -83,5 +113,21 @@ const styles = StyleSheet.create({
     setaesquerda:{
        width: 10,
        height: 15,
+    },
+    contatosList: {
+        marginTop: 30,
+        width: '100%',
+    },
+    contactItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+        width: '100%',
+        alignItems: 'center',
+    },
+    contactText: {
+        fontSize: 18,
     },
 });

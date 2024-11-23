@@ -88,7 +88,7 @@ export default function HomePage({ navigation }) {
                     images={images}
                     titleStyle={{ color: 'white' }}
                     cardWidth={width * 0.4}
-                    cardHeight={height * 0.3}
+                    cardHeight={height * 0.229}
                 />
 
                 <View style={styles.conteudoCicloContainer}>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     conteudoContainer: {
         flexDirection: 'row',
         marginLeft: width * 0.03,
-        marginTop: -height * 0.03,
+        marginTop: -height * 0.015,
         alignItems: 'center',
     },
     conteudoDia: {
@@ -206,19 +206,21 @@ const styles = StyleSheet.create({
     },
     conteudoCicloContainer: {
         flexDirection: 'row',
+        
         marginLeft: width * 0.03,
         alignItems: 'center',
     },
     containerBottom: {
         backgroundColor: '#BCBCBC4D',
         borderRadius: 10,
+        marginBottom: height * 0.09,
         padding: height * 0.01,
         margin: width * 0.04,
         justifyContent: 'center',
         alignItems: 'flex-start',
     },
     smallText: {
-        marginLeft: 15,
+        marginLeft: width * 0.015,
         color: '#666666',
         fontSize: width * 0.03,
     },
