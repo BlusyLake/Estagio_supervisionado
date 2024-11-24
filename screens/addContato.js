@@ -16,6 +16,17 @@ export const carregarContatos = async () => {
     }
 };
 
+export const excluirContato = async (id) => {
+    try {
+        const contatosSalvos = await carregarContatos();
+        const novosContatos = contatosSalvos.filter(contato => contato.id !== id);
+        await AsyncStorage.setItem('contatos', JSON.stringify(novosContatos));
+        return novosContatos; // Retorna a lista atualizada
+    } catch (error) {
+        console.error('Erro ao excluir contato:', error);
+        return [];
+    }
+};
 export default function Contatos() {
     const navigation = useNavigation();
     
@@ -81,24 +92,11 @@ export default function Contatos() {
         }
     };
 
-    const carregarContatos = async () => {
-        try {
-            const contatosSalvos = await AsyncStorage.getItem('contatos');
-            if (contatosSalvos) {
-                setContatos(JSON.parse(contatosSalvos));
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const excluirContato = async (id) => {
-        const novosContatos = contatos.filter(contato => contato.id !== id);
-        setContatos(novosContatos);
-        await AsyncStorage.setItem('contatos', JSON.stringify(novosContatos));
-    };
+  
+  
 
     return (
+    
         <View style={styles.view}>
             <TouchableOpacity 
                 style={styles.sair} 
@@ -139,7 +137,7 @@ export default function Contatos() {
                 <Text style={styles.textoSalvar}>Salvar</Text>
             </TouchableOpacity>
 
-            <FlatList
+          { /* <FlatList
                 data={contatos}
                 keyExtractor={(item) => item.id}
                 style={styles.contatosList}
@@ -154,7 +152,7 @@ export default function Contatos() {
                         </TouchableOpacity>
                     </View>
                 )}
-            />
+            />/*}
 
             {/* Modal para alertas */}
             <Modal

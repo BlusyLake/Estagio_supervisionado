@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Linking } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { carregarContatos } from './addContato';
+import {  excluirContato, carregarContatos } from './addContato';
 
 export default function Contatos() {
     const navigation = useNavigation();
@@ -20,6 +20,10 @@ export default function Contatos() {
     const iniciarLigacao = (numero) => {
         const tel = `tel:${numero}`;
         Linking.openURL(tel).catch(err => console.error('Erro ao tentar fazer a ligação', err));
+    };
+    const handleExcluirContato = async (id) => {
+        const novosContatos = await excluirContato(id); // Atualiza os contatos no AsyncStorage
+        setContatos(novosContatos); // Atualiza o estado local
     };
 
     return (
@@ -52,6 +56,9 @@ export default function Contatos() {
                     >
                         <Text style={styles.contactText}>{item.nome}</Text>
                         <Text style={styles.contactText}>{item.celular}</Text>
+                        <TouchableOpacity onPress={() => handleExcluirContato(item.id)}>
+                            <Text style={styles.excluir}>Excluir</Text>
+                        </TouchableOpacity>
                     </TouchableOpacity>
                 )}
                 style={styles.contatosList}
