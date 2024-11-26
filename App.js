@@ -67,16 +67,14 @@ function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', backgroundColor: '#fff' }}>
+    <View style={{ alignItems: 'center', backgroundColor: '#fff', paddingTop:60 }}>
+
+      
+
       <Image source={require('./viva.jpeg')} style={{ width: '56%', height: 90 }} />
       <Image source={require('./logo.jpeg')} style={{ width: '100%', height: 250 }} />
 
-      {location && (
-        <Text style={{ color: '#000', marginTop: 10 }}>
-          Localização Atual: {location.latitude}, {location.longitude}
-        </Text>
-      )}
-
+     
       <Text style={{ textAlign: 'center', marginTop: '10%', color: '#000000B2', fontSize: 12 }}>
         Vamos nos conhecer!
       </Text>
@@ -116,17 +114,26 @@ function HomeScreen({ navigation }) {
         <Text style={{ color: '#fff' }}>Vamos lá!</Text>
       </TouchableOpacity>
 
-      <Text style={{
-        marginLeft: '2%',
-        marginRight: '2%',
-        marginTop: '10%',
-        fontSize: 8,
-        fontWeight: '400',
-        lineHeight: 20,
-        letterSpacing: -0.408,
-        textAlign: 'center',
-        color: '#000000',
-      }}>
+      <TouchableOpacity
+        style={{ position: 'absolute', right: 20, top: 20 }}
+        onPress={() => navigation.navigate('HomePage')}
+      >
+        <Text style={{ color: '#808080', fontSize: 12 }}>Pular</Text>
+      </TouchableOpacity>
+
+      <Text
+        style={{
+          marginLeft: '2%',
+          marginRight: '2%',
+          marginTop: '10%',
+          fontSize: 8,
+          fontWeight: '400',
+          lineHeight: 20,
+          letterSpacing: -0.408,
+          textAlign: 'center',
+          color: '#000000',
+        }}
+      >
         Ao fazer login, você concorda com nossos Termos e Condições, saiba como usamos seus dados em nossa Política de Privacidade.
       </Text>
     </View>
@@ -141,39 +148,21 @@ function HomeStackScreen() {
       <StatusBar backgroundColor="#F9497D" barStyle="light-content" />
 
       <HomeStack.Navigator
-        screenOptions={({ navigation }) => ({
-          headerStyle: {
-            backgroundColor: '#fff',
-            elevation: 0,
-            shadowOpacity: 0,
-            shadowOffset: { width: 0, height: 0 },
-            shadowRadius: 0,
-          },
-          headerTintColor: 'black',
-          headerShadowVisible: false,
-          headerRight: () => (
-            <TouchableOpacity
-              style={{ padding: 10 }}
-              onPress={() => navigation.navigate('HomePage')}
-            >
-              <Text style={{ color: '#808080', fontSize: 12 }}>Pular</Text>
-            </TouchableOpacity>
-
-            
-          ),
-        })}
+        screenOptions={{
+          headerShown: false, // Remove o cabeçalho em todas as telas
+        }}
       >
-        <HomeStack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
-        <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
-        <HomeStack.Screen name="SOS" component={SosScreen} options={{ headerShown: false }} />
-        <HomeStack.Screen name="calendario" component={Calendario} options={{ headerShown: false }} />
-        <HomeStack.Screen name="configuracoes" component={Configuracoes} options={{ headerShown: false }} />
-        <HomeStack.Screen name="contatos" component={Contatos} options={{ headerShown: false }} />
-        <HomeStack.Screen name="configBotao" component={ConfigBotao} options={{ headerShown: false }} />
-        <HomeStack.Screen name="addcontatos" component={Addcontatos} options={{ headerShown: false }} />
-        <HomeStack.Screen name="informacoes" component={Informacoes} options={{ headerShown: false }} />
-        <HomeStack.Screen name="perguntas" component={FAQScreen} options={{ headerShown: false }} />
-        <HomeStack.Screen name="cofre" component={Cofre} options={{ headerShown: false }} />
+        <HomeStack.Screen name="Home" component={HomeScreen} />
+        <HomeStack.Screen name="HomePage" component={HomePage} />
+        <HomeStack.Screen name="SOS" component={SosScreen} />
+        <HomeStack.Screen name="calendario" component={Calendario} />
+        <HomeStack.Screen name="configuracoes" component={Configuracoes} />
+        <HomeStack.Screen name="contatos" component={Contatos} />
+        <HomeStack.Screen name="configBotao" component={ConfigBotao} />
+        <HomeStack.Screen name="addcontatos" component={Addcontatos} />
+        <HomeStack.Screen name="informacoes" component={Informacoes} />
+        <HomeStack.Screen name="perguntas" component={FAQScreen} />
+        <HomeStack.Screen name="cofre" component={Cofre} />
       </HomeStack.Navigator>
     </>
   );
