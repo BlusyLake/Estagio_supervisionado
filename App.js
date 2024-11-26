@@ -17,6 +17,7 @@ import FAQScreen from './screens/perguntas';
 import Galeria from './screens/Galeria';
 import Cofre from './screens/cofre';
 import TirarFoto from './screens/tirarFoto';
+import EditarContato from './screens/EditarContato';
 
 function HomeScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -173,6 +174,7 @@ function HomeStackScreen() {
         <HomeStack.Screen name="contatos" component={Contatos} options={{ headerShown: false }} />
         <HomeStack.Screen name="configBotao" component={ConfigBotao} options={{ headerShown: false }} />
         <HomeStack.Screen name="addcontatos" component={Addcontatos} options={{ headerShown: false }} />
+        <HomeStack.Screen name="EditarContato" component={EditarContato} options={{ headerShown: false }} />
         <HomeStack.Screen name="informacoes" component={Informacoes} options={{ headerShown: false }} />
         <HomeStack.Screen name="perguntas" component={FAQScreen} options={{ headerShown: false }} />
         <HomeStack.Screen name="cofre" component={Cofre} options={{ headerShown: false }} />

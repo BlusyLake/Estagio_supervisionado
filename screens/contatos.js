@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Linking } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import {  excluirContato, carregarContatos } from './addContato';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Contatos() {
     const navigation = useNavigation();
     const [contatos, setContatos] = useState([]);
 
     useFocusEffect(
+        
         React.useCallback(() => {
             const fetchContatos = async () => {
                 const contatosCarregados = await carregarContatos();
@@ -16,7 +18,7 @@ export default function Contatos() {
             fetchContatos();
         }, [])
     );
-
+    /*
     const iniciarLigacao = (numero) => {
         const tel = `tel:${numero}`;
         Linking.openURL(tel).catch(err => console.error('Erro ao tentar fazer a ligação', err));
@@ -25,6 +27,7 @@ export default function Contatos() {
         const novosContatos = await excluirContato(id); // Atualiza os contatos no AsyncStorage
         setContatos(novosContatos); // Atualiza o estado local
     };
+    */
 
     return (
         <View style={styles.view}>
@@ -36,7 +39,23 @@ export default function Contatos() {
             </TouchableOpacity>
             
             <Text style={styles.texto}> Contatos </Text>
+            <TouchableOpacity>
+                <Image source={require('../assets/Group_177.png')} style={styles.btnMensagem} resizeMode='contain' />
+            </TouchableOpacity>
             <View style={styles.botoes}> 
+            <FlatList
+                data={contatos}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <TouchableOpacity 
+                        style={styles.contactItem}
+                        onPress={() => navigation.navigate('EditarContato', { contato: item })}
+                    >
+                        <Text style={styles.contactText}>{item.nome}</Text>
+                    </TouchableOpacity>
+                )}
+                style={styles.contatosList}
+            />
                 <TouchableOpacity 
                     style={styles.botao} 
                     onPress={() => navigation.navigate('addcontatos')} 
@@ -46,23 +65,7 @@ export default function Contatos() {
                     <Image source={require('../assets/adicionar.png')} style={styles.imagem} />
                 </TouchableOpacity>
             </View>
-            <FlatList
-                data={contatos}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <TouchableOpacity 
-                        style={styles.contactItem}
-                        onPress={() => iniciarLigacao(item.celular)}
-                    >
-                        <Text style={styles.contactText}>{item.nome}</Text>
-                        <Text style={styles.contactText}>{item.celular}</Text>
-                        <TouchableOpacity onPress={() => handleExcluirContato(item.id)}>
-                            <Text style={styles.excluir}>Excluir</Text>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                )}
-                style={styles.contatosList}
-            />
+            
         </View>
     );
 }
@@ -101,14 +104,14 @@ const styles = StyleSheet.create({
     imagem: {
         position: "absolute",
         left: 20,
-        width: 30,
-        height: 30,
+        width: 28,
+        height: 28,
         top: 14,
     },  
     textoBotao: {
         textAlign: "justify",
         marginLeft: 50,
-        color:"#A8A3A3"
+        color:"#4092FF"
     },
     sair: {
         position: "absolute",
@@ -120,13 +123,21 @@ const styles = StyleSheet.create({
     setaesquerda:{
        width: 10,
        height: 15,
-    },
+    },btnMensagem:{
+        width: 50,
+        height: 30,
+        position: 'absolute',
+        top: 20,
+        right: 1
+     },
     contatosList: {
         marginTop: 30,
         width: '100%',
+        
     },
     contactItem: {
         flexDirection: 'row',
+        backgroundColor: '#FFFFFF99',
         justifyContent: 'space-between',
         padding: 15,
         borderBottomWidth: 1,
@@ -136,5 +147,6 @@ const styles = StyleSheet.create({
     },
     contactText: {
         fontSize: 18,
+        marginLeft: 10
     },
 });

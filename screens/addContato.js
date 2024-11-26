@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, FlatList, Modal } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const carregarContatos = async () => {
@@ -29,7 +29,8 @@ export const excluirContato = async (id) => {
 };
 export default function Contatos() {
     const navigation = useNavigation();
-    
+    const route = useRoute();
+    const [id, setId] = useState(route.params?.id || null); // Recebe o ID do contato, caso exista
     const [nome, setNome] = useState('');
     const [celular, setCelular] = useState('');
     const [contatos, setContatos] = useState([]);
@@ -37,51 +38,84 @@ export default function Contatos() {
     const [mensagemModal, setMensagemModal] = useState('');
 
     useEffect(() => {
-        carregarContatos();
+        const carregarDados = async () => {
+            const contatosSalvos = await carregarContatos();
+            setContatos(contatosSalvos); // Atualiza a lista de contatos no estado
+
+            if (id) {
+                const contatoParaEditar = contatosSalvos.find(contato => contato.id === id);
+                if (contatoParaEditar) {
+                    setNome(contatoParaEditar.nome);
+                    setCelular(contatoParaEditar.celular);
+                }
+            }
+        };
+        carregarDados();
+    }, [id]);
+
+    useEffect(() => {
+        const carregarDados = async () => {
+            const contatosSalvos = await carregarContatos();
+            setContatos(contatosSalvos); // Atualiza a lista de contatos no estado
+        };
+        carregarDados();
     }, []);
 
+    const gerarId = () => {
+        const timestamp = Date.now().toString();
+        const numeroAleatorio = Math.floor(10000 + Math.random() * 90000);
+        return `${timestamp}-${numeroAleatorio}`;
+    };
+    
     const salvarContato = async () => {
-        // Regex para verificar se o número contém apenas dígitos e tem entre 10 e 11 caracteres.
         const numeroValido = /^\d{10,11}$/.test(celular);
 
-        if (nome && celular) {
-            if (!numeroValido) {
-                setMensagemModal('Por favor, insira um número de celular válido com 10 ou 11 dígitos.');
-                setModalVisible(true);
-                return;
-            }
+        if (!nome || !celular) {
+            setMensagemModal('Preencha todos os campos.');
+            setModalVisible(true);
+            return;
+        }
 
-            // Verifica se o número já existe na lista de contatos
+        if (!numeroValido) {
+            setMensagemModal('Número de celular inválido. Use 10 ou 11 dígitos.');
+            setModalVisible(true);
+            return;
+        }
+
+        const novoContato = { id: id || gerarId(), nome, celular };
+
+        let contatosAtualizados;
+        if (id) {
+            // Atualiza o contato existente
+            contatosAtualizados = contatos.map((contato) =>
+                contato.id === id ? novoContato : contato
+            );
+        } else {
+            // Adiciona um novo contato
             const numeroExistente = contatos.find(contato => contato.celular === celular);
             if (numeroExistente) {
                 setMensagemModal('Esse número já está cadastrado!');
                 setModalVisible(true);
                 return;
             }
-
-            // Verifica se já existem 4 contatos
-            if (contatos.length >= 4) {
-                setMensagemModal('Você pode salvar no máximo 4 contatos!');
-                setModalVisible(true);
-                return;
-            }
-
-            // Cria um novo contato
-            const novoContato = { id: Date.now().toString(), nome, celular };
-
-            const novosContatos = [...contatos, novoContato];
-            setContatos(novosContatos);
-
-            await AsyncStorage.setItem('contatos', JSON.stringify(novosContatos));
-
-            setNome('');
-            setCelular('');
-        } else {
-            setMensagemModal('Por favor, preencha todos os campos');
-            setModalVisible(true);
+            contatosAtualizados = [...contatos, novoContato];
         }
-    };
 
+        setContatos(contatosAtualizados);
+        await AsyncStorage.setItem('contatos', JSON.stringify(contatosAtualizados));
+
+        setMensagemModal(id ? 'Contato atualizado com sucesso!' : 'Contato salvo com sucesso!');
+        setModalVisible(true);
+
+        setNome('');
+        setCelular('');
+        setId(null);
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'contatos' }],
+          });
+    };
+    
     const handleCelularChange = (text) => {
         // Remove caracteres não numéricos
         const apenasNumeros = text.replace(/\D/g, '');
@@ -92,21 +126,22 @@ export default function Contatos() {
         }
     };
 
-  
-  
-
     return (
     
         <View style={styles.view}>
-            <TouchableOpacity 
-                style={styles.sair} 
-                onPress={() => navigation.navigate('contatos')} 
-            >
-                <Image source={require('../assets/setaesquerda.png')} style={styles.setaesquerda} />
-            </TouchableOpacity>
-            
-            <Text style={styles.texto}>Adicionar Contatos</Text>
-            
+            <View style={styles.textoBotaoContainer}>
+                <TouchableOpacity 
+                    style={styles.sair} 
+                    onPress={() => navigation.navigate('contatos')} 
+                >
+                    <Image source={require('../assets/setaesquerda.png')} style={styles.setaesquerda} />
+                </TouchableOpacity>
+                
+                <Text style={styles.texto}>Adicionar Contatos</Text>
+                <TouchableOpacity style={styles.botaoSalvar} onPress={salvarContato}>
+                    <Text style={styles.textoSalvar}>Salvar</Text>
+                </TouchableOpacity>
+            </View>
             <View style={styles.botoes}>
                 <View style={styles.botao}>
                     <Text style={styles.textoBotao}>Nome</Text>
@@ -132,11 +167,6 @@ export default function Contatos() {
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />
                 </View>
             </View>
-            
-            <TouchableOpacity style={styles.botaoSalvar} onPress={salvarContato}>
-                <Text style={styles.textoSalvar}>Salvar</Text>
-            </TouchableOpacity>
-
           { /* <FlatList
                 data={contatos}
                 keyExtractor={(item) => item.id}
@@ -188,9 +218,10 @@ const styles = StyleSheet.create({
         paddingTop: 40,
     },
     texto: {
-        marginTop: 20,
-        fontSize: 17,
+        fontSize: 18,
+        marginTop: 15,
         textAlign: "center",
+        flex: 1,
     },
     botoes: {
         marginTop: 60, 
@@ -220,32 +251,35 @@ const styles = StyleSheet.create({
         position: "absolute",
         width: 30,
         height: 30,
-        top: 54,
+        top: 20,
         left: 20,
     },
     setaesquerda: {
-       width: 10,
-       height: 15,
+        marginTop: 5,
+        width: 10,
+        height: 15,
     },
     textInput: {
         flex: 2,
+        color: '#F9497D',
         padding: 5,
         marginLeft: 10,
     },
     botaoSalvar: {
-        height: 50,
-        marginTop: 20,
+        backgroundColor: "#F9497D",
+        paddingLeft: 10,
+        position:'absolute',
+        paddingBottom: 2,
+        paddingTop: 2,
+        paddingRight: 10,
+        alignItems: "center",
+        borderRadius: 10,
+        right: 10,
+        top: 60
     },
     textoSalvar: {
-        height: 50,
-        width: 200,
-        backgroundColor: "#F9497D",
-        marginTop: 30,
-        fontSize: 20,
-        paddingTop: 7,
-        color: "#FFF",
-        borderRadius: 10,
-        textAlign: "center",
+        color: "#FFFFFF",
+        fontSize: 18,
     },
     contatosList: {
         marginTop: 30,
@@ -299,5 +333,12 @@ const styles = StyleSheet.create({
     closeButtonText: {
         color: '#FFFFFF', // Texto do botão de fechar
         fontSize: 16,
+    },textoBotaoContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        marginBottom: 20,
     },
 });
