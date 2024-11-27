@@ -54,10 +54,17 @@ export default function Informacoes() {
     return (
         <View style={styles.view}>
             <StatusBar translucent backgroundColor="#F9497D" barStyle="dark-content" />
-
+            
             <View style={styles.titulo}>
-                <Text style={styles.texto}>Sua voz contra a violência</Text>
+                <Text style={styles.texto}>Sua voz contra à violência</Text>
+                <TouchableOpacity 
+                    style={styles.sair} 
+                    onPress={() => navigation.navigate('SOS')} 
+                >
+                    <Image source={require('../assets/setaesquerda.png')} style={styles.setaesquerda} />
+                </TouchableOpacity>
             </View>
+            
 
             <FlatList
                 ref={flatListRef}
@@ -81,6 +88,8 @@ export default function Informacoes() {
                 <TouchableOpacity style={styles.button} onPress={scrollToNext}>
                     <Image source={require('../assets/SetaDireita.png')} style={styles.buttonImage} />
                 </TouchableOpacity>
+
+                
             </View>
         </View>
     );
@@ -137,9 +146,24 @@ const styles = StyleSheet.create({
     },
     texto: {
         color: "#FF5E8E",
-        textAlign: 'justify',
+        textAlign: 'center',
         fontSize: 40,
         fontFamily: 'poppins-regular',
         fontWeight: 'bold',
+        paddingLeft:40,
+    },
+
+    sair: {
+        position: "absolute",
+        width: 30,
+        height: 30,
+        top: 15,
+        left: 20,
+    },
+    setaesquerda: {
+        marginTop: 5,
+        width: 15,
+        height: 20,
+        
     },
 });

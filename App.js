@@ -14,7 +14,10 @@ import Addcontatos from './screens/addContato';
 import ConfigBotao from './screens/configBotao';
 import Informacoes from './screens/informacoes';
 import FAQScreen from './screens/perguntas';
+import Galeria from './screens/Galeria';
 import Cofre from './screens/cofre';
+import TirarFoto from './screens/tirarFoto';
+import EditarContato from './screens/EditarContato';
 
 function HomeScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -152,17 +155,21 @@ function HomeStackScreen() {
           headerShown: false, // Remove o cabeçalho em todas as telas
         }}
       >
-        <HomeStack.Screen name="Home" component={HomeScreen} />
-        <HomeStack.Screen name="HomePage" component={HomePage} />
-        <HomeStack.Screen name="SOS" component={SosScreen} />
-        <HomeStack.Screen name="calendario" component={Calendario} />
-        <HomeStack.Screen name="configuracoes" component={Configuracoes} />
-        <HomeStack.Screen name="contatos" component={Contatos} />
-        <HomeStack.Screen name="configBotao" component={ConfigBotao} />
-        <HomeStack.Screen name="addcontatos" component={Addcontatos} />
-        <HomeStack.Screen name="informacoes" component={Informacoes} />
-        <HomeStack.Screen name="perguntas" component={FAQScreen} />
-        <HomeStack.Screen name="cofre" component={Cofre} />
+       <HomeStack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
+        <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
+        <HomeStack.Screen name="SOS" component={SosScreen} options={{ headerShown: false }} />
+        <HomeStack.Screen name="calendario" component={Calendario} options={{ headerShown: false }} />
+        <HomeStack.Screen name="configuracoes" component={Configuracoes} options={{ headerShown: false }} />
+        <HomeStack.Screen name="contatos" component={Contatos} options={{ headerShown: false }} />
+        <HomeStack.Screen name="configBotao" component={ConfigBotao} options={{ headerShown: false }} />
+        <HomeStack.Screen name="addcontatos" component={Addcontatos} options={{ headerShown: false }} />
+        <HomeStack.Screen name="EditarContato" component={EditarContato} options={{ headerShown: false }} />
+        <HomeStack.Screen name="informacoes" component={Informacoes} options={{ headerShown: false }} />
+        <HomeStack.Screen name="perguntas" component={FAQScreen} options={{ headerShown: false }} />
+        <HomeStack.Screen name="cofre" component={Cofre} options={{ headerShown: false }} />
+        <HomeStack.Screen name="galeria" component={Galeria} options={{ headerShown: false }} />
+        <HomeStack.Screen name="tirarFoto" component={TirarFoto} options={{ headerShown: false }} />
+
       </HomeStack.Navigator>
     </>
   );

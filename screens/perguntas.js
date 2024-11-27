@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, FlatList, TextInput, StyleSheet, Image } 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const FAQScreen = ({ navigation }) => { // Adicionado 'navigation' como prop
-  // Dados simulados de FAQ
+const FAQScreen = ({ navigation }) => { 
+ 
   const faqData = [
     { id: '1', question: 'Como adicionar contatos de emergência ?', answer: 'A Responder.' },
     { id: '2', question: 'O que acontece ao selecionar um contato?', answer: 'A Responder.' },
@@ -14,23 +14,20 @@ const FAQScreen = ({ navigation }) => { // Adicionado 'navigation' como prop
     { id: '6', question: 'Posso personalizar as ações do Botão de Emergência?', answer: 'A Responder.' },
   ];
 
-  // Estado para controlar o FAQ expandido
+ 
   const [expandedIndex, setExpandedIndex] = useState(null);
-  // Estado para armazenar o texto da busca
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Função para alternar o estado do FAQ expandido
+  
   const toggleAnswer = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  // Função para filtrar as FAQs com base no texto da busca
   const filteredData = faqData.filter(item =>
     item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Função para renderizar cada item da lista de FAQs
   const renderItem = ({ item, index }) => (
     <View style={styles.faqItem}>
       <View style={styles.faqHeader}>
@@ -45,26 +42,19 @@ const FAQScreen = ({ navigation }) => { // Adicionado 'navigation' como prop
 
   return (
     <View style={styles.container}>
-      {/* Header com Gradiente e bordas arredondadas */}
-      <LinearGradient
-        start={{ x: 0, y: 1 }}
-        end={{ x: 1, y: 0 }}
-        colors={['#F9497D', '#FFE9E9']}
-        style={styles.headerContainer}
-      >
+     
         <View style={styles.headerContent}>
-          {/* Botão com imagem de seta à esquerda */}
           <TouchableOpacity style={styles.arrowButton}  onPress={() => navigation.navigate('configuracoes')}> 
             <Icon name="chevron-left" size={40} color="#000" />
           </TouchableOpacity>
 
-          {/* Título "Perguntas Frequentes" centralizado */}
-          <Text style={styles.header}>Perguntas Frequentes</Text>
-        </View>
-      </LinearGradient>
+          <Text style={styles.header}>Perguntas frequentes</Text>
 
-      {/* Campo de busca */}
-      <View style={styles.searchContainer}>
+          </View>
+      
+          <Text style= {styles.info}> Algumas perguntas que são feitas frequentimente!</Text>
+     
+      <View style={styles.searchContainer}>        
         <Icon name="search" size={24} color="#888" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
@@ -74,7 +64,7 @@ const FAQScreen = ({ navigation }) => { // Adicionado 'navigation' como prop
         />
       </View>
 
-      {/* Lista de FAQs filtradas */}
+      
       <FlatList
         data={filteredData}
         renderItem={renderItem}
@@ -87,8 +77,7 @@ const FAQScreen = ({ navigation }) => { // Adicionado 'navigation' como prop
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#FFE9E9",
+    backgroundColor: "#FFCCCC",
     height: "100%",
     width: "100%",
   },
@@ -107,20 +96,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',  
     alignItems: 'center',  
     width: '100%', 
-    justifyContent: 'center', 
+    backgroundColor: "#FFE9E9",
+    top:10,
+    height: 80
+    
   },
   arrowButton: {
     position: 'absolute', 
-    left: -20,  
-    top: '50%', 
+    top: '70%', 
     transform: [{ translateY: -20 }], 
   },
   header: {
-    fontSize: 20,
+    fontSize: 23,
     fontWeight: 'bold',
-    color: "#000",
+    color: "#FF5E8E",
     textAlign: 'center', 
     flex: 1,  
+    marginTop:30
   },
   searchContainer: {
     flexDirection: 'row',
@@ -134,6 +126,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     elevation: 5,
+    width:'85%',
+    alignSelf:'center'
   },
   searchIcon: {
     paddingLeft: 10,
@@ -147,14 +141,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   faqItem: {
-    marginBottom: 15,
-    padding: 20,
+    marginBottom: 10,
+    padding: 12,
     backgroundColor: '#ffffff',
     borderRadius: 8,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 5,
+    marginHorizontal:25
+   
   },
   faqHeader: {
     flexDirection: 'row',
@@ -177,6 +173,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     color: "#F9497D",
+  },
+
+  info: {
+
+    paddingTop:10,
+    width: '90%',
+    fontSize: 14,
+    textAlign:'center',
+    color:"#fff",
+    backgroundColor:"#FF5E8E",
+    borderRadius:5,
+    height:40,
+    alignContent:'center',
+    marginTop:25,
+    alignSelf:'center'
+
   },
 });
 

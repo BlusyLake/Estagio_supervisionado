@@ -15,12 +15,12 @@ export default function Cofre() {
                 </TouchableOpacity>
                 
                 <Text style={[styles.title, { fontSize: width * 0.07 }]}>Cofre</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('tirarFoto')}>
                     <AntDesign name="camera" size={width * 0.08} color="black" />
                 </TouchableOpacity>
             </View>
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Galeria')}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('galeria')}>
                     <SimpleLineIcons name="picture" size={width * 0.14} color="black" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button}>
