@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
         height: "100%",
         width: "100%", 
         alignItems: "center",
+        paddingTop:40
         
     },
     texto: {
@@ -123,6 +124,7 @@ const styles = StyleSheet.create({
     setaesquerda:{
        width: 10,
        height: 15,
+       top:40
     },btnMensagem:{
         width: 50,
         height: 30,
