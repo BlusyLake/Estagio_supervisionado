@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, StyleSheet, Image, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AntDesign } from '@expo/vector-icons';
+const { width, height } = Dimensions.get('window');
 
 const FAQScreen = ({ navigation }) => { 
  
@@ -44,8 +46,8 @@ const FAQScreen = ({ navigation }) => {
     <View style={styles.container}>
      
         <View style={styles.headerContent}>
-          <TouchableOpacity style={styles.arrowButton}  onPress={() => navigation.navigate('configuracoes')}> 
-            <Icon name="chevron-left" size={40} color="#000" />
+          <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.goBack()}>
+            <AntDesign name="left" size={width * 0.07} color="black" />
           </TouchableOpacity>
 
           <Text style={styles.header}>Perguntas frequentes</Text>
@@ -103,7 +105,10 @@ const styles = StyleSheet.create({
   },
   arrowButton: {
     position: 'absolute', 
-    top: '70%', 
+    top: '70%',
+    height: 40,
+    width: 40,
+    backgroundColor:'red',
     transform: [{ translateY: -20 }], 
   },
   header: {

@@ -27,7 +27,7 @@ export default function Configuracoes() {
                 </TouchableOpacity>
                 
                 <TouchableOpacity style={styles.botao}
-                onPress={() => navigation.navigate('cofre')}>
+                onPress={() => navigation.navigate('galeria')}>
                      
                     <Text style={styles.textoBotao}> Cofre </Text> 
                     <Image source={require('../assets/setinha.png')} style={styles.setinha} />

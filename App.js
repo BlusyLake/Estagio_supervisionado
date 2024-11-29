@@ -18,6 +18,7 @@ import Galeria from './screens/Galeria';
 import Cofre from './screens/cofre';
 import TirarFoto from './screens/tirarFoto';
 import EditarContato from './screens/EditarContato';
+import Mensagem from './screens/mensagem';
 
 function HomeScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -169,6 +170,7 @@ function HomeStackScreen() {
         <HomeStack.Screen name="cofre" component={Cofre} options={{ headerShown: false }} />
         <HomeStack.Screen name="galeria" component={Galeria} options={{ headerShown: false }} />
         <HomeStack.Screen name="tirarFoto" component={TirarFoto} options={{ headerShown: false }} />
+        <HomeStack.Screen name="Mensagem" component={Mensagem} options={{ headerShown: false }} />
 
       </HomeStack.Navigator>
     </>

@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { atualizarContato, excluirContato } from './addContato';
+import { AntDesign } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
 
 export default function EditarContato() {
     const route = useRoute();
@@ -81,8 +84,8 @@ export default function EditarContato() {
     return (
         <View style={styles.view}>
             <View style={styles.textoBotaoContainer}>
-                <TouchableOpacity style={styles.sair} onPress={() => navigation.goBack()}>
-                    <Image source={require('../assets/setaesquerda.png')} style={styles.setaesquerda} />
+                <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.goBack()}>
+                    <AntDesign name="left" size={width * 0.07} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.texto}>Editar Contato</Text>
                 <TouchableOpacity style={styles.botaoSalvar} onPress={handleSalvar}>
@@ -122,6 +125,7 @@ const styles = StyleSheet.create({
     view: {
         backgroundColor: "#FFE9E9",
         height: "100%",
+        marginTop: 30,
         width: "100%",
         alignItems: "center",
     },

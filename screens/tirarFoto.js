@@ -28,7 +28,7 @@ export default function TirarFoto() {
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
+      <View style={styles.view}>
         <Text style={styles.message}>Você precisa habilitar a permissão da câmera</Text>
         <Button onPress={requestPermission} title="Permissão" />
       </View>
@@ -81,6 +81,21 @@ export default function TirarFoto() {
 }
 
 const styles = StyleSheet.create({
+  view: {
+    backgroundColor: "#FFE9E9",
+    height: "100%",
+    width: "100%", 
+    alignContent: 'center',
+    alignItems: "center",
+    paddingTop:40
+},
+botaoP: {
+  backgroundColor: "#fff", 
+  padding: 20,
+  borderColor: "#A9A4A4",
+  borderTopWidth: 0.5,
+  width: "100%", 
+},
   container: {
     flex: 1,
     justifyContent: 'flex-end',

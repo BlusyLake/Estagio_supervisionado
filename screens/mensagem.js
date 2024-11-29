@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign } from '@expo/vector-icons';
 const { width, height } = Dimensions.get('window');
 
-export default function Contatos() {
+export default function Mensagem() {
     const navigation = useNavigation();
     const [contatos, setContatos] = useState([]);
 
@@ -38,10 +38,9 @@ export default function Contatos() {
                         <AntDesign name="left" size={width * 0.07} color="black" />
                     </TouchableOpacity>
                 <Text style={styles.texto}> Contatos </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Mensagem')}>
+                <TouchableOpacity>
                     <Image source={require('../assets/Group_177.png')} style={styles.btnMensagem} resizeMode='contain' />
                 </TouchableOpacity>
-                
             </View>
             <View style={styles.botoes}> 
             <FlatList
@@ -129,7 +128,8 @@ const styles = StyleSheet.create({
         width: 50,
         height: 30,
         position: 'absolute',
-        right: 0
+        top: -25,
+        right: -170
      },
     contatosList: {
         marginTop: 30,

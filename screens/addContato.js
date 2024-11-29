@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, FlatList, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, TextInput, Dimensions, Modal } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { AntDesign } from '@expo/vector-icons';
+const { width, height } = Dimensions.get('window');
 export const carregarContatos = async () => {
     try {
         const contatosSalvos = await AsyncStorage.getItem('contatos');
@@ -130,13 +131,9 @@ export default function Contatos() {
     
         <View style={styles.view}>
             <View style={styles.textoBotaoContainer}>
-                <TouchableOpacity 
-                    style={styles.sair} 
-                    onPress={() => navigation.navigate('contatos')} 
-                >
-                    <Image source={require('../assets/setaesquerda.png')} style={styles.setaesquerda} />
+                <TouchableOpacity style={{ marginTop: 16 }} onPress={() => navigation.navigate('contatos')}>
+                    <AntDesign name="left" size={width * 0.07} color="black" />
                 </TouchableOpacity>
-                
                 <Text style={styles.texto}>Adicionar Contatos</Text>
                 <TouchableOpacity style={styles.botaoSalvar} onPress={salvarContato}>
                     <Text style={styles.textoSalvar}>Salvar</Text>
@@ -216,7 +213,6 @@ const styles = StyleSheet.create({
         width: "100%", 
         alignItems: "center",
         paddingTop:40
-      
     },
     texto: {
         fontSize: 16,
@@ -252,13 +248,15 @@ const styles = StyleSheet.create({
         position: "absolute",
         width: 30,
         height: 30,
+
         top: 20,
         left: 20,
     },
     setaesquerda: {
         marginTop: 5,
+        marginLeft: 5,
         width: 10,
-        height: 15,
+        height: 20,
     },
     textInput: {
         flex: 2,
