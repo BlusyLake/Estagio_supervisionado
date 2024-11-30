@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; 
+import { AntDesign } from '@expo/vector-icons';
 
 export default function Configuracoes() { 
     const navigation = useNavigation(); 
@@ -11,7 +12,7 @@ export default function Configuracoes() {
                 style={styles.sair} 
                 onPress={() => navigation.navigate('SOS')} 
             >
-                <Image source={require('../assets/sair.png')} style={styles.imagemsair} />
+                <AntDesign name='close' size={28}style={styles.imagemsair} />
             </TouchableOpacity>
             
             <Text style={styles.texto}> Configuração </Text>
