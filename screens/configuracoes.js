@@ -92,16 +92,10 @@ const styles = StyleSheet.create({
     },
     sair: {
         position: "absolute",
-        left: -10,
-        width: 30,
-        height: 30,
-        top: -1,
-    },
-    imagemsair:{
-        position: "absolute",
         left: 20,
-        width: 30,
-        height: 30,
+        width: 35,
+        height: 35,
         top: 54,
-    }
+
+    },
 });
