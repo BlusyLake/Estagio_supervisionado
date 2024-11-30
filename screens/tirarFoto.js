@@ -9,7 +9,11 @@ export default function TirarFoto() {
   const [facing, setFacing] = useState('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [photo, setPhoto] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);  
+  const [videoUri, setVideoUri] = useState(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);  // Estado de câmera pronta
   const cameraRef = useRef(null);
+  const [cameraMode, setCameraMode] = useState('picture'); // Estado para armazenar o modo da câmera
 
   const muteCamera = async () => {
     try {
@@ -20,6 +24,10 @@ export default function TirarFoto() {
     } catch (error) {
       console.error('Erro ao silenciar o som:', error);
     }
+  };
+
+  const onCameraReady = () => {
+    setIsCameraReady(true);
   };
 
   if (!permission) {
@@ -40,42 +48,128 @@ export default function TirarFoto() {
   }
 
   const takePicture = async () => {
-    if (cameraRef.current) {
-      await muteCamera();
-      const photoData = await cameraRef.current.takePictureAsync();
-      const photoUri = photoData.uri;
+    // Colocando um delay para alternar o modo da câmera
+    setCameraMode('picture');  // Garantir que o modo seja 'picture' antes de tirar a foto
+    setTimeout(async () => {
+      if (cameraRef.current) {
+        await muteCamera();
+        const photoData = await cameraRef.current.takePictureAsync();
+        const photoUri = photoData.uri;
 
-      const appFolder = FileSystem.documentDirectory + 'fotos/';
-      const fileName = photoUri.split('/').pop();
-      const savedUri = appFolder + fileName;
+        const appFolder = FileSystem.documentDirectory + 'fotos/';
+        const fileName = photoUri.split('/').pop();
+        const savedUri = appFolder + fileName;
 
+        try {
+          await FileSystem.makeDirectoryAsync(appFolder, { intermediates: true });
+          await FileSystem.moveAsync({
+            from: photoUri,
+            to: savedUri,
+          });
+
+          setPhoto(savedUri);
+        } catch (error) {
+          console.error('Erro ao salvar a foto:', error);
+        }
+      }
+    }, 300); // Delay de 300ms
+  };
+
+  const startRecording = async () => {
+    // Colocando um delay para alternar o modo da câmera
+    setCameraMode('video');  // Garantir que o modo seja 'video' antes de começar a gravar
+    setTimeout(async () => {
+      if (cameraRef.current && !isRecording && isCameraReady) {
+        try {
+          setIsRecording(true);
+  
+          // Inicia a gravação com a verificação de erros
+          const videoData = await cameraRef.current.recordAsync({
+            onRecordingStatusUpdate: (status) => {
+              if (status.isRecording) {
+                console.log('Gravando...', status);
+              }
+              if (!status.isRecording && status.uri) {
+                setVideoUri(status.uri);  // Gravação concluída
+              }
+            },
+          });
+  
+          // Verifica se a gravação gerou dados válidos
+          if (videoData && videoData.uri) {
+            const appFolder = FileSystem.documentDirectory + 'fotos/'; // Pasta para vídeos
+            const fileName = videoData.uri.split('/').pop(); // Obtendo o nome do arquivo
+            const savedUri = appFolder + fileName; // Caminho completo do arquivo salvo
+  
+            // Criando o diretório se não existir
+            await FileSystem.makeDirectoryAsync(appFolder, { intermediates: true });
+  
+            // Movendo o vídeo para o diretório privado do app
+            await FileSystem.moveAsync({
+              from: videoData.uri,
+              to: savedUri,
+            });
+  
+            setVideoUri(savedUri); // Atualiza o URI com o caminho onde o vídeo foi salvo
+          } else {
+            console.error('Erro: dados de vídeo inválidos');
+          }
+        } catch (error) {
+          console.error('Erro ao iniciar a gravação do vídeo:', error);
+        }
+      }
+    }, 300); // Delay de 300ms
+  };
+  
+
+  const stopRecording = async () => {
+    if (cameraRef.current && isRecording) {
       try {
-        await FileSystem.makeDirectoryAsync(appFolder, { intermediates: true });
-        await FileSystem.moveAsync({
-          from: photoUri,
-          to: savedUri,
-        });
+        // Um pequeno atraso para garantir que a gravação seja concluída
+        await new Promise(resolve => setTimeout(resolve, 500));  // 500ms de atraso
 
-        setPhoto(savedUri);
+        setIsRecording(false);
+        await cameraRef.current.stopRecording();
+        console.log('Gravação de vídeo parada com sucesso.');
       } catch (error) {
-        console.error('Erro ao salvar a foto:', error);
+        console.error('Erro ao parar a gravação do vídeo:', error);
       }
     }
   };
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+      <CameraView mode={cameraMode}
+        style={styles.camera}
+        facing={facing}
+        ref={cameraRef}
+        onCameraReady={onCameraReady}
+      >
         <View style={styles.overlay}>
-          {/* Botões de controle */}
           <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
             <Ionicons name="camera-reverse" size={32} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={takePicture}>
             <Ionicons name="camera" size={32} color="white" />
           </TouchableOpacity>
+          {isRecording ? (
+            <TouchableOpacity style={[styles.button, { backgroundColor: 'red' }]} onPress={stopRecording}>
+              <Ionicons name="stop" size={32} color="white" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={startRecording}>
+              <Ionicons name="videocam" size={32} color="white" />
+            </TouchableOpacity>
+          )}
         </View>
       </CameraView>
+
+      {videoUri && (
+        <View style={styles.preview}>
+          <Text>Vídeo Gravado</Text>
+          <Image source={{ uri: videoUri }} style={styles.image} />
+        </View>
+      )}
     </View>
   );
 }
@@ -87,15 +181,8 @@ const styles = StyleSheet.create({
     width: "100%", 
     alignContent: 'center',
     alignItems: "center",
-    paddingTop:40
-},
-botaoP: {
-  backgroundColor: "#fff", 
-  padding: 20,
-  borderColor: "#A9A4A4",
-  borderTopWidth: 0.5,
-  width: "100%", 
-},
+    paddingTop: 40,
+  },
   container: {
     flex: 1,
     justifyContent: 'flex-end',

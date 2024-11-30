@@ -315,7 +315,7 @@ export default function Galeria() {
                 </View>
             ) : (
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <TouchableOpacity onPress={() => navigation.navigate('tirarFoto')}>
                         <AntDesign name="left" size={width * 0.08} color="black" />
                     </TouchableOpacity>
                     <Text style={[styles.title, { fontSize: width * 0.07 }]}>Cofre</Text>
