@@ -3,9 +3,9 @@ import {
     View, Text, StyleSheet, SafeAreaView, Dimensions, 
     TouchableOpacity, FlatList, Image, Modal, Alert 
 } from "react-native";
-import { Share } from 'react-native';
+import JSZip from 'jszip';
 import * as Sharing from 'expo-sharing'; 
-import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AntDesign, MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -17,7 +17,6 @@ export default function Galeria() {
     const navigation = useNavigation(); 
     const [media, setMedia] = useState([]);
     const [permissionGranted, setPermissionGranted] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [selectAll, setSelectAll] = useState(false);
     const [selectedMedia, setSelectedMedia] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -59,6 +58,36 @@ export default function Galeria() {
         setSelectAll(!selectAll); // Alterna o estado de "Selecionar Todos"
         setIsSelectionMode(!selectAll); // Ativa ou desativa o modo de seleção
     };
+
+    const createZipFile = async (files) => {
+        const zip = new JSZip();
+        const cacheDirectory = FileSystem.cacheDirectory;
+        const zipPath = cacheDirectory + 'shared_files.zip';
+    
+        try {
+            // Adiciona os arquivos ao ZIP
+            for (let fileUri of files) {
+                const fileName = fileUri.split('/').pop(); // Obtém o nome do arquivo
+                const fileData = await FileSystem.readAsStringAsync(fileUri, {
+                    encoding: FileSystem.EncodingType.Base64,
+                });
+                zip.file(fileName, fileData, { base64: true });
+            }
+    
+            // Gera o arquivo ZIP em base64
+            const zipContent = await zip.generateAsync({ type: 'base64' });
+    
+            // Salva o arquivo ZIP no sistema de arquivos do Expo
+            await FileSystem.writeAsStringAsync(zipPath, zipContent, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
+    
+            return zipPath;
+        } catch (error) {
+            console.error('Erro ao criar o arquivo zip:', error);
+            return null;
+        }
+    };    
 
     const toggleSelection = (item) => {
         setSelectedItems((prev) => {
@@ -132,32 +161,35 @@ export default function Galeria() {
 
     const handleShareSelected = async () => {
         try {
-            const mediaUris = selectedItems; // Obtém as mídias selecionadas
-            const cachedUris = [];
-    
-            // Copia os arquivos para o cache e cria URIs compartilháveis
-            for (const uri of mediaUris) {
-                const cachedUri = await copyFileToCache(uri);
-                cachedUris.push(cachedUri);
+            if (selectedItems.length === 0) {
+                Alert.alert("Erro", "Nenhum item selecionado para compartilhar.");
+                return;
             }
     
-            // Compartilhar todas as imagens copiadas para o cache
-            if (cachedUris.length > 0) {
-                // Verifique se o dispositivo pode compartilhar
+            // Copiar todos os arquivos para o cache temporário
+            const copiedFiles = [];
+            for (const uri of selectedItems) {
+                const cachedUri = await copyFileToCache(uri);
+                copiedFiles.push(cachedUri);
+            }
+    
+            // Compartilhar todos os arquivos
+            for (const cachedUri of copiedFiles) {
                 if (await Sharing.isAvailableAsync()) {
-                    // Compartilhe as imagens (apenas URIs)
-                    await Sharing.shareAsync(cachedUris);
+                    await Sharing.shareAsync(cachedUri);
                 } else {
-                    console.error("Compartilhamento não disponível neste dispositivo.");
+                    Alert.alert("Erro", "O compartilhamento não está disponível neste dispositivo.");
+                    return;
                 }
             }
     
-            setSelectedItems([]); // Limpa a seleção após o compartilhamento
-            setIsSelectionMode(false); // Sai do modo de seleção
+            setSelectedItems([]);  // Limpar a seleção após o compartilhamento
+            setIsSelectionMode(false);  // Desativar o modo de seleção
+    
         } catch (error) {
-            console.error('Erro ao compartilhar as mídias:', error);
+            console.error("Erro ao compartilhar as mídias:", error);
         }
-    };
+    };    
     
     const shareMedia = async (uri) => {
         try {
@@ -206,7 +238,6 @@ export default function Galeria() {
             const directoryExists = await FileSystem.getInfoAsync(cacheFolder);
             if (directoryExists.exists) {
                 const files = await FileSystem.readDirectoryAsync(cacheFolder);
-                // Exclui todos os arquivos no diretório de cache
                 for (let file of files) {
                     await FileSystem.deleteAsync(cacheFolder + file);
                 }
@@ -216,31 +247,27 @@ export default function Galeria() {
             console.error('Erro ao limpar o cache:', error);
         }
     };
-    
+
     const copyFileToCache = async (uri) => {
-        const cacheFolder = FileSystem.cacheDirectory + 'shared_media/';
-        const fileName = uri.split('/').pop();
-        const newUri = cacheFolder + fileName;
-    
         try {
-            // Limpa o cache antes de copiar o arquivo
-            await clearCache();
+            const cacheFolder = FileSystem.cacheDirectory + 'shared_media/';
+            const fileName = uri.split('/').pop();
+            const newUri = cacheFolder + fileName;
     
             const directoryExists = await FileSystem.getInfoAsync(cacheFolder);
             if (!directoryExists.exists) {
                 await FileSystem.makeDirectoryAsync(cacheFolder, { intermediates: true });
             }
     
-            // Copia o arquivo da URI original para o cache
             await FileSystem.copyAsync({
                 from: uri,
                 to: newUri,
             });
     
-            console.log('Arquivo copiado para o cache com sucesso');
             return newUri;
         } catch (error) {
-            console.error('Erro ao copiar arquivo para o cache:', error);
+            console.error("Erro ao copiar arquivo para o cache:", error);
+            throw error;
         }
     };
     
@@ -293,8 +320,8 @@ export default function Galeria() {
                     </TouchableOpacity>
                     <Text style={[styles.title, { fontSize: width * 0.07 }]}>Cofre</Text>
                     {!isSelectionMode && (
-                        <TouchableOpacity onPress={handleUpload}>
-                            <AntDesign name="upload" size={width * 0.08} color="black" />
+                        <TouchableOpacity style={{ backgroundColor: '#F9497D', paddingLeft: 5, paddingRight: 5, width:width * 0.12, height:height * 0.035, borderRadius: 10, alignItems: 'center', justifyContent: 'center'}} onPress={handleUpload}>
+                            <AntDesign name='picture' size={width * 0.05} style={styles.actionText}/>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -362,10 +389,10 @@ export default function Galeria() {
             {isSelectionMode && (
                 <View style={styles.selectionActions}>
                     <TouchableOpacity style={styles.actionButton} onPress={handleShareSelected}>
-                        <Text style={styles.actionText}>Compartilhar</Text>
+                        <AntDesign name='upload' size={width * 0.08} style={styles.actionText}/>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
-                        <Text style={styles.actionText}>Excluir</Text>
+                        <FontAwesome name='trash-o' size={width * 0.08} style={styles.actionText}/>
                     </TouchableOpacity>
                 </View>
             )}
@@ -450,6 +477,8 @@ const styles = StyleSheet.create({
     },
     actionButton: {
         padding: 10,
+        marginLeft: 10,
+        marginRight: 10,
         borderRadius: 8,
     },
     actionText: {
