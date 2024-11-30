@@ -163,13 +163,6 @@ export default function TirarFoto() {
           )}
         </View>
       </CameraView>
-
-      {videoUri && (
-        <View style={styles.preview}>
-          <Text>Vídeo Gravado</Text>
-          <Image source={{ uri: videoUri }} style={styles.image} />
-        </View>
-      )}
     </View>
   );
 }
