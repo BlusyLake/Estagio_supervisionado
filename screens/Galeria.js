@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import * as MediaLibrary from 'expo-media-library';
 import { 
     View, Text, StyleSheet, SafeAreaView, Dimensions, 
     TouchableOpacity, FlatList, Image, Modal, Alert 
 } from "react-native";
-import JSZip from 'jszip';
 import * as Sharing from 'expo-sharing'; 
 import { AntDesign, MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Video } from 'expo-av'; // Corrigido importação para vídeo
 
 const { width, height } = Dimensions.get('window');
 
 export default function Galeria() {
     const navigation = useNavigation(); 
+    const [mediaCreationDate, setMediaCreationDate] = useState(null);
     const [media, setMedia] = useState([]);
     const [permissionGranted, setPermissionGranted] = useState(true);
     const [selectAll, setSelectAll] = useState(false);
@@ -27,13 +28,17 @@ export default function Galeria() {
     useEffect(() => {
         loadMediaFromAppDirectory();
     }, []);
-
+    useFocusEffect(
+        React.useCallback(() => {
+            loadMediaFromAppDirectory(); // Carregar mídia ao voltar para a tela
+        }, [])
+    );
     const loadMediaFromAppDirectory = async () => {
         const appFolder = FileSystem.documentDirectory + 'fotos/';
         try {
             const folderInfo = await FileSystem.readDirectoryAsync(appFolder);
             const mediaFiles = folderInfo.filter(file => 
-                file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.mp4')
+                file.endsWith('.jpg') || file.endsWith('.png') || file.endsWith('.mp4') || file.endsWith('.jpeg')
             );
 
             const mediaUris = mediaFiles.map(file => appFolder + file);
@@ -58,36 +63,6 @@ export default function Galeria() {
         setSelectAll(!selectAll); // Alterna o estado de "Selecionar Todos"
         setIsSelectionMode(!selectAll); // Ativa ou desativa o modo de seleção
     };
-
-    const createZipFile = async (files) => {
-        const zip = new JSZip();
-        const cacheDirectory = FileSystem.cacheDirectory;
-        const zipPath = cacheDirectory + 'shared_files.zip';
-    
-        try {
-            // Adiciona os arquivos ao ZIP
-            for (let fileUri of files) {
-                const fileName = fileUri.split('/').pop(); // Obtém o nome do arquivo
-                const fileData = await FileSystem.readAsStringAsync(fileUri, {
-                    encoding: FileSystem.EncodingType.Base64,
-                });
-                zip.file(fileName, fileData, { base64: true });
-            }
-    
-            // Gera o arquivo ZIP em base64
-            const zipContent = await zip.generateAsync({ type: 'base64' });
-    
-            // Salva o arquivo ZIP no sistema de arquivos do Expo
-            await FileSystem.writeAsStringAsync(zipPath, zipContent, {
-                encoding: FileSystem.EncodingType.Base64,
-            });
-    
-            return zipPath;
-        } catch (error) {
-            console.error('Erro ao criar o arquivo zip:', error);
-            return null;
-        }
-    };    
 
     const toggleSelection = (item) => {
         setSelectedItems((prev) => {
@@ -129,36 +104,158 @@ export default function Galeria() {
         );
     };
 
-    const handleUpload = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const extractDateFromFileName = (fileName) => {
+        // Expressão regular para capturar a data e hora no formato: 30-11-202410-03-13
+        const regex = /(\d{2})-(\d{2})-(\d{4})(\d{2})-(\d{2})-(\d{2})/;
+        const match = fileName.match(regex);
+        
+        if (match) {
+            const day = match[1]; // Dia
+            const month = match[2]; // Mês
+            const year = match[3]; // Ano
+            const hour = match[4]; // Hora
+            const minute = match[5]; // Minuto
+            const second = match[6]; // Segundo
+    
+            // Criar a data para obter o dia da semana
+            const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+    
+            // Função para formatar o dia da semana
+            const formatWeekday = (date) => {
+                const weekdays = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+                return weekdays[date.getDay()];
+            };
+    
+            // Formatar a data para exibir
+            const weekday = formatWeekday(date);
+            const time = `${hour}:${minute}`;
+    
+            return { weekday, time };
+        }
+    
+        return { weekday: 'Data inválida', time: 'Hora inválida' };
+    };
+    
+    const handleMediaPress = async (item) => {
+        setSelectedMedia(item);
+        setIsVideo(item.endsWith('.mp4'));
+        setIsModalVisible(true);
+    
+        // Extraímos a data e hora do nome do arquivo
+        const { weekday, time } = extractDateFromFileName(item);
+        setMediaCreationDate({ weekday, time });  // Atualiza o estado com o dia da semana e hora
+    };
+    
+    const uploadMedia = async () => {
+
+        const permissionResult = await MediaLibrary.requestPermissionsAsync();
         if (!permissionResult.granted) {
             Alert.alert("Permissão negada", "Você precisa conceder permissão para acessar a galeria.");
             return;
         }
-
+    
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.All,
             allowsEditing: true,
             quality: 1,
         });
-
+    
+        console.log("Resultado do ImagePicker:", result);
+    
         if (!result.canceled) {
-            const { uri } = result.assets[0];
-            const appFolder = FileSystem.documentDirectory + 'fotos/';
-            const fileName = uri.split('/').pop();
-
-            try {
-                await FileSystem.moveAsync({
-                    from: uri,
-                    to: appFolder + fileName,
-                });
-                setMedia((prev) => [...prev, appFolder + fileName]);
-            } catch (error) {
-                console.error("Erro ao fazer upload:", error);
+            const { uri, type } = result.assets[0];
+    
+            console.log("URI:", uri);
+            console.log("Tipo de mídia:", type);
+    
+            if (!uri || !type) {
+                console.log("Erro: URI ou tipo de mídia não encontrados.");
+                return;
             }
+    
+            try {
+                // Pegar a data de criação ou modificação antes de mover
+                const fileInfo = await FileSystem.getInfoAsync(uri);
+                let creationDate = fileInfo.modificationTime
+                    ? new Date(fileInfo.modificationTime)
+                    : new Date();  // Caso não tenha, usa a data atual
+    
+                // Verificar se a data é inválida (1970, que é a data de epoch)
+                if (creationDate.getFullYear() === 1970) {
+                    console.log("Data inválida, utilizando data atual.");
+                    creationDate = new Date();  // Fallback para data atual
+                }
+    
+                console.log('Data de criação/modificação:', creationDate);
+    
+                // Formatar a data de criação para o nome do arquivo
+                const formattedDate = creationDate.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                }).replace(/[^\w\s-]/g, '-').replace(/\s/g, ''); // Remover caracteres inválidos para o nome do arquivo
+    
+                // Gerar novo nome para o arquivo com a data
+                const fileExtension = type === 'image' ? '.jpg' : type === 'video' ? '.mp4' : '';
+                const newFileName = `${formattedDate}${fileExtension}`;
+    
+                console.log("Novo nome do arquivo:", newFileName);
+    
+                const appFolder = FileSystem.documentDirectory + 'fotos/';
+                const newUri = appFolder + newFileName;
+    
+                // Verificar se a pasta 'fotos' existe, caso contrário, criar
+                const folderInfo = await FileSystem.getInfoAsync(appFolder);
+                if (!folderInfo.exists) {
+                    await FileSystem.makeDirectoryAsync(appFolder, { intermediates: true });
+                }
+    
+                // Mover o arquivo para a pasta interna
+                await FileSystem.moveAsync({ from: uri, to: newUri });
+    
+                // Exibindo um alerta de sucesso
+                if (type === 'video') {
+                    Alert.alert("Vídeo salvo com sucesso!");
+                } else if (type === 'image') {
+                    Alert.alert("Imagem salva com sucesso!");
+                }
+    
+                // Atualizar o estado para refletir o arquivo movido
+                setMedia((prev) => [...prev, newUri]);
+    
+            } catch (error) {
+                console.error("Erro ao processar o arquivo:", error);
+            }
+        } else {
+            console.log("Seleção de mídia cancelada.");
         }
-    };
-
+    }
+    
+    const handleUpload = async () => {
+        Alert.alert(
+            "Escolha uma opção",
+            "",
+            [
+              {
+                text: "Cancelar",
+                onPress: () => console.log("Cancelado"),
+                style: "cancel",
+              },
+              {
+                text: "Importar mídias",
+                onPress: () => uploadMedia(),
+              },
+              {
+                text: "Tirar Foto",
+                onPress: () => navigation.navigate('tirarFoto'), // Navega para a página 'tirarFoto'
+              }
+            ]
+          );
+    };    
+    
     const handleShareSelected = async () => {
         try {
             if (selectedItems.length === 0) {
@@ -277,26 +374,25 @@ export default function Galeria() {
 
         return (
             <TouchableOpacity 
-                style={[styles.card, isSelected && styles.selectedCard]}
-                onLongPress={() => handleLongPress(item)}
-                onPress={() => {
-                    if (isSelectionMode) {
-                        toggleSelection(item);
-                    } else {
-                        setSelectedMedia(item);
-                        setIsVideo(item.endsWith('.mp4'));
-                        setIsModalVisible(true);
-                    }
-                }}
-            >
-                {item.endsWith('.mp4') ? (
-                    <View style={styles.videoPreview}>
-                        <AntDesign name="play" size={width * 0.1} color="black" />
-                    </View>
-                ) : (
-                    <Image source={{ uri: item }} style={styles.cardImage} />
-                )}
-            </TouchableOpacity>
+            style={[styles.card, isSelected && styles.selectedCard]}
+            onLongPress={() => handleLongPress(item)}
+            onPress={() => {
+                if (isSelectionMode) {
+                    toggleSelection(item);
+                } else {
+                    // Aqui você chama handleMediaPress ao pressionar a mídia
+                    handleMediaPress(item);
+                }
+            }}
+        >
+            {item.endsWith('.mp4') ? (
+                <View style={styles.videoPreview}>
+                    <AntDesign name="play" size={width * 0.1} color="black" />
+                </View>
+            ) : (
+                <Image source={{ uri: item }} style={styles.cardImage} />
+            )}
+        </TouchableOpacity>
         );
     };
 
@@ -315,13 +411,13 @@ export default function Galeria() {
                 </View>
             ) : (
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.navigate('tirarFoto')}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
                         <AntDesign name="left" size={width * 0.08} color="black" />
                     </TouchableOpacity>
                     <Text style={[styles.title, { fontSize: width * 0.07 }]}>Cofre</Text>
                     {!isSelectionMode && (
                         <TouchableOpacity style={{ backgroundColor: '#F9497D', paddingLeft: 5, paddingRight: 5, width:width * 0.12, height:height * 0.035, borderRadius: 10, alignItems: 'center', justifyContent: 'center'}} onPress={handleUpload}>
-                            <AntDesign name='picture' size={width * 0.05} style={styles.actionText}/>
+                            <AntDesign name='picture' size={width * 0.05} style={{ color: 'white' }}/>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -337,7 +433,6 @@ export default function Galeria() {
             ) : (
                 <Text style={styles.permissionText}>Permissão não concedida para acessar a galeria.</Text>
             )}
-
             <Modal
                 visible={isModalVisible}
                 transparent={true}
@@ -345,12 +440,32 @@ export default function Galeria() {
                 onRequestClose={() => setIsModalVisible(false)}
             >
                 <View style={styles.modalContainer}>
-                    <TouchableOpacity 
-                        style={styles.closeButton} 
-                        onPress={() => setIsModalVisible(false)}
-                    >
-                        <AntDesign name="close" size={width * 0.08} color="white" />
-                    </TouchableOpacity>
+                    <View style={styles.modalHeader}>
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={() => {setIsModalVisible(false); loadMediaFromAppDirectory();}}
+                        >
+                            <AntDesign name="arrowleft" size={width * 0.08} color="black" />
+                        </TouchableOpacity>
+                        {mediaCreationDate && (
+                            <View style={styles.creationDateContainer}>
+                                <Text style={[styles.creationDateText, { fontWeight: 'bold', fontSize: 18 }]}>
+                                    {mediaCreationDate.weekday}
+                                </Text>
+                                <Text style={styles.creationDateText}>
+                                    {mediaCreationDate.time}
+                                </Text>
+                            </View>
+                        )}
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={() => shareMedia(selectedMedia)}
+                        >
+                            <AntDesign name="sharealt" size={width * 0.08} color="black" />
+                        </TouchableOpacity>
+                        
+                    </View>
+                    
                     {selectedMedia && isVideo ? (
                         <Video
                             source={{ uri: selectedMedia }}
@@ -360,32 +475,25 @@ export default function Galeria() {
                             shouldPlay
                         />
                     ) : (
-                        <Image 
-                            source={{ uri: selectedMedia }} 
-                            style={styles.modalMedia} 
-                            resizeMode="contain" 
+                        <Image
+                            source={{ uri: selectedMedia }}
+                            style={styles.modalMedia}
+                            resizeMode="cover"
                         />
                     )}
-                    <View style={styles.modalActions}>
-                        <TouchableOpacity 
-                            style={styles.actionButton} 
-                            onPress={() => shareMedia(selectedMedia)}
-                        >
-                            <Text style={styles.actionText}>Compartilhar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={styles.actionButton} 
-                            onPress={async () => {
-                                await FileSystem.deleteAsync(selectedMedia);
-                                setMedia((prev) => prev.filter((item) => item !== selectedMedia));
-                                setIsModalVisible(false);
-                            }}
-                        >
-                            <Text style={styles.actionText}>Excluir</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={async () => {
+                            await FileSystem.deleteAsync(selectedMedia);
+                            setMedia((prev) => prev.filter((item) => item !== selectedMedia));
+                            setIsModalVisible(false);
+                        }}
+                    >
+                        <Text style={styles.deleteButtonText}>Apagar Imagem</Text>
+                    </TouchableOpacity>
                 </View>
             </Modal>
+
             {isSelectionMode && (
                 <View style={styles.selectionActions}>
                     <TouchableOpacity style={styles.actionButton} onPress={handleShareSelected}>
@@ -451,31 +559,71 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    modalMedia: {
-        width: '95%',
-        height: '95%',
-    },
-    closeButton: {
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        backgroundColor: 'rgba(169, 164, 164, 0.7)',
+        width: '100%',
         position: 'absolute',
-        top: 20,
-        right: 20,
-        zIndex: 1,
+        top: 0,
+        zIndex: 10, // Garante que os botões fiquem acima da mídia
+        paddingHorizontal: 20,
+        paddingVertical: 5,
     },
-    permissionText: {
+    iconButton: {
+        padding: 15, // Aumenta a área clicável
+        
+        borderRadius: 10, // Deixa os botões arredondados
+    },
+    modalMedia: {
+        width: '100%',
+        height: '100%', // Ocupa toda a altura disponível
+    },
+    deleteButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        justifyContent: 'center', // Alinha verticalmente
+        alignItems: 'center', // Alinha horizontalmente
+        flexDirection: 'row', // Necessário para que o alinhamento funcione
+    },
+    deleteButtonText: {
+        color: '#FF0000',
+        fontSize: 16,
+        fontWeight: '400',
+        textAlign: 'center', // Garante que o texto esteja centralizado no botão
+    },
+    actionText: {
+        color: '#FF0000',
+        fontWeight: '400',
+        fontSize: 16,
+        textAlign: 'center',
+    },
+    creationDateContainer: {
+        flex: 3, // O texto ocupará mais espaço
+        alignItems: 'center', // Centraliza o texto horizontalmente
+        justifyContent: 'center', // Centraliza o texto verticalmente
+    },
+    creationDateText: {
+        color: '#000', 
+        zIndex: 10,
+        fontSize: 16,
+        fontWeight: '500',
         textAlign: 'center',
     },selectionActionsHeader:{
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#F9497D',
         padding: 10,
-    },
-    selectionActions: {
+    }, selectionActions: {
         flexDirection: 'row',
         backgroundColor: '#F9497D',
         justifyContent: 'space-between',
         padding: 1,
-    },
-    actionButton: {
+    },actionButton: {
         padding: 10,
         marginLeft: 10,
         marginRight: 10,
