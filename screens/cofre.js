@@ -1,200 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Dimensions, TouchableOpacity, ScrollView, Image, Modal, Button, } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView, Dimensions, TouchableOpacity, Image } from "react-native";
+import { AntDesign, SimpleLineIcons, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { pickMedia, showSavedMedia, deleteMedia, shareMedia } from '../cofreApi';
-import { Video } from 'expo-av';
 
 const { width, height } = Dimensions.get('window');
 
-export default function Galeria() {
-    const navigation = useNavigation();
-    const [savedMedia, setSavedMedia] = useState([]);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [currentMedia, setCurrentMedia] = useState(null);
-
-    useEffect(() => {
-        fetchSavedMedia();
-    }, []);
-
-    const fetchSavedMedia = async () => {
-        const media = await showSavedMedia();
-        setSavedMedia(media);
-    };
-
-    const handlePickMedia = async () => {
-        const media = await pickMedia();
-        if (media) fetchSavedMedia(); // Atualiza a galeria
-    };
-
-    const openMediaInFullScreen = (mediaUri) => {
-        setCurrentMedia(mediaUri);
-        setIsModalVisible(true);
-    };
-
-    const exMedia = async () =>{
-        deleteMedia(currentMedia);
-        setIsModalVisible(false);
-        fetchSavedMedia();
-    }
-
+export default function Cofre() {
+    const navigation = useNavigation(); 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <AntDesign
-                    name="left"
-                    size={width * 0.08}
-                    color="black"
-                    />
+                <TouchableOpacity onPress={() => navigation.navigate('configuracoes')}>
+                    <AntDesign name="left" size={width * 0.08} color="black" />
                 </TouchableOpacity>
-                <Text style={[styles.title,{ fontSize: width * 0.07 }]}>Cofre</Text>
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={handlePickMedia}
-                >
-                    <AntDesign name='plus' size={width * 0.05} style={styles.actionText} />
+                
+                <Text style={[styles.title, { fontSize: width * 0.07 }]}>Cofreeee</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('configuracoes')}>
+                    <AntDesign name="left" size={width * 0.08} color="black" />
                 </TouchableOpacity>
             </View>
-
-            <ScrollView contentContainerStyle={styles.gallery}>
-                {savedMedia.map((mediaUri, index) => (
-                    <TouchableOpacity key={index} onPress={() => openMediaInFullScreen(mediaUri)}>
-                        {mediaUri.endsWith('.mp4') ? (
-                            <Video
-                                source={{ uri: mediaUri }}
-                                resizeMode="cover"
-                                shouldPlay={false}
-                                style={styles.media}
-                            />
-                        ) : (
-                            <Image source={{ uri: mediaUri }} style={styles.media} />
-                        )}
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-
-            <Modal
-                visible={isModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setIsModalVisible(false)}
-            >
-                <View style={styles.modal}>
-                    <TouchableOpacity style={styles.closeButton} onPress={() => setIsModalVisible(false)}>
-                        <AntDesign name='close' size={24} color="pink"/>
-                    </TouchableOpacity>
-                    {currentMedia && currentMedia.endsWith('.mp4') ? (
-                        <Video
-                            source={{ uri: currentMedia }}
-                            resizeMode="contain"
-                            shouldPlay
-                            style={styles.fullscreenMedia}
-                        />
-                    ) : (
-                        <Image source={{ uri: currentMedia }} style={styles.fullscreenMedia} />
-                    )}
-                    <View style={styles.modalActions}>
-                        <TouchableOpacity style={styles.modalButton} onPress={() => exMedia(currentMedia)}>
-                            <Text style={styles.modalButtonText}>Excluir</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.modalButton} onPress={() => shareMedia(currentMedia)}>
-                            <Text style={styles.modalButtonText}>compartilhar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('galeria')}>
+                    <SimpleLineIcons name="picture" size={width * 0.14} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button}>
+                    <MaterialIcons name="ondemand-video" size={width * 0.14} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button}>
+                    <Feather name="trash-2" size={width * 0.14} color="black" />
+                </TouchableOpacity>
+            </View>
+            <View style={styles.footer}>
+                <TouchableOpacity  style={styles.footerIcon} >
+                    <Image source={require('../assets/adicionar1.png')} style={{width: 40, height: 40}}/>
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 25,
         flex: 1,
         backgroundColor: '#FFE9E9',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
     },
     header: {
+        width: '100%',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 20,
+        paddingHorizontal: width * 0.05,
+        paddingVertical: height * 0.05,
     },
     title: {
+        color: 'black',
         fontWeight: 'bold',
-        flex: 1,
-        textAlign: 'center',
     },
-    addButton: {
-        backgroundColor: '#F9497D',
-        padding: 5,
-        width: width * 0.12,
-        height: height * 0.045,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    actionText: {
-        color: 'white',
-    },
-    gallery: { 
+    buttonContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-around',
-        
+        paddingHorizontal: 10,
     },
-    media: {
-        width: width * 0.4,
-        height: width * 0.4,
-        marginBottom: 10,
-        borderRadius: 7,
-        overflow: 'hidden',
-        
+    button: {
+        backgroundColor: '#FFFFFF99',
+        margin: 10,
+        borderRadius: 10,
+        padding: 10,
+        height: height * 0.18,
+        width: width * 0.42,
+        borderColor: '#A9A4A4',
+        borderWidth: 1,
+        justifyContent: 'center',
+        alignItems: 'center', 
     },
-    modal: { 
-        flex: 1, 
-        backgroundColor: 'black', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-    },
-    fullscreenMedia: {
-        width: '100%',
-        height: '80%',
-        marginTop: 10,
-    },
-    modalActions: {
-        flexDirection: 'row', 
-        marginTop: 20, 
-    },
-    closeButton:{
+    footer: {
         position: 'absolute',
-        top: 10,
-        right: 330,
-        zIndex: 1,
-        backgroundColor: '#F9497D',
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        bottom: 0,
+        width: '100%',
+        height: height * 0.1,
+        backgroundColor: '#FFFFFF99',
+        borderTopWidth: 1,
+        borderColor: '#A9A4A4',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    modalActions: {
-        widht: '100%',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+    footerIcon: {
         position: 'absolute',
-        bottom: 20,
-    },
-    modalButton: {
-        backgroundColor: '#F9497D',
-        paddingVertical: 10,
-        paddingHorizontal: 10,
-        borderRadius: 5,
-        marginHorizontal: 30,
-    },
-    modalButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 16,
+        top: -height * 0.024,
     },
 });
