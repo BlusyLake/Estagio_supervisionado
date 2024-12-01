@@ -19,9 +19,9 @@ export const handlePanic = async () => {
 
     contatos.forEach(async (contato) => {
         try {
-            console.log(`Enviando mensagem para o número: ${contato.celular}`);
+            console.log(`Enviando mensagem para o número: ${contato.numeroComDdd}`);
             const response = await axios.post('link', {
-                number: contato.celular,
+                number: contato.numeroComDdd,
                 textMessage: {
                     text: `Mensagem de teste, Localização: ${message}`
                 },
