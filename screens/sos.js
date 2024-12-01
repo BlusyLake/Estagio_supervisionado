@@ -1,11 +1,9 @@
 import React, { useRef } from 'react';
-import { Alert, Text, View, StyleSheet, Image, TouchableOpacity, PanResponder } from 'react-native';
+import { Button, Text, View, StyleSheet, Image, TouchableOpacity, PanResponder } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handlePanic } from '../panicHandler';
-
 
 export default function SOS() {
   const navigation = useNavigation();
@@ -22,38 +20,6 @@ export default function SOS() {
       },
     })
   ).current;
-
-  const handleSos = async () => {
-    try {
-      const userMessage = await AsyncStorage.getItem('userMessage');
-      const contatos = await AsyncStorage.getItem('contatos');
-
-      // Montar mensagem de alerta dependendo do que falta
-      let missingItems = [];
-      
-      if (!userMessage) {
-        missingItems.push('userMessage');
-      }
-      
-      // Verifica se 'contatos' está vazio ou ausente
-      if (!contatos || contatos === '[]' || JSON.parse(contatos).length === 0) {
-        missingItems.push('contatos');
-      }
-
-      if (missingItems.length > 0) {
-        Alert.alert(
-          'Dados faltando',
-          `Os seguintes itens estão faltando: ${missingItems.join(', ')}`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        // Se todos os itens estão presentes, navega para o próximo local
-        alert('sos');  // Exemplo de como mostrar os contatos
-      }
-    } catch (error) {
-      console.error('Erro ao acessar o AsyncStorage:', error);
-    }
-  };
 
   return (
     <View style={styles.view} {...panResponder.panHandlers}>
@@ -87,7 +53,7 @@ export default function SOS() {
         <Image source={require('../assets/viva.png')} style={styles.image} />
         <View style={styles.esfera}></View>
 
-        <TouchableOpacity onPress={handlePanic} style={{ position: 'relative', justifyContent: 'center', marginTop: '25%', height: '50%', width: '30%' }} onPress={handleSos}>
+        <TouchableOpacity onPress={handlePanic} style={{ position: 'relative', justifyContent: 'center', marginTop: '25%', height: '50%', width: '30%' }}>
           <Image source={require('../assets/circulo.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, borderRadius: 1000, width: '110%', height: '105%' }} />
           <Image source={require('../assets/circulo2.png')} style={{ position: 'absolute', alignSelf: 'center', borderRadius: 1000, width: '160%', height: "150%" }} />
           <Image source={require('../assets/emergencia.png')} style={{ position: 'absolute', alignSelf: 'center', zIndex: 1, width: '80%', height: '65%' }} />
