@@ -10,7 +10,7 @@ export const handlePanic = async () => {
     }
 
     const irlLocation = async () => {
-        const location = await fetch('https://realtime-location-api.onrender.com/localizacao/current');
+        const location = await fetch('link');
         const data = await location.json();
         return data.message;
     };
@@ -20,7 +20,7 @@ export const handlePanic = async () => {
     contatos.forEach(async (contato) => {
         try {
             console.log(`Enviando mensagem para o número: ${contato.celular}`);
-            const response = await axios.post('https://5ab3-2804-7d74-8c-bc00-cbb7-7856-5c02-c6de.ngrok-free.app/message/sendText/Alerta', {
+            const response = await axios.post('link', {
                 number: contato.celular,
                 textMessage: {
                     text: `Mensagem de teste, Localização: ${message}`
