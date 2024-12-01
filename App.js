@@ -4,6 +4,7 @@ import { Button, Text, View, StatusBar, TouchableOpacity, Image, TextInput } fro
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importando o AsyncStorage
 
 import SosScreen from './screens/sos';
 import Configuracoes from './screens/configuracoes';
@@ -16,7 +17,6 @@ import Informacoes from './screens/informacoes';
 import FAQScreen from './screens/perguntas';
 import Galeria from './screens/Galeria';
 import Cofre from './screens/cofre';
-import TirarFoto from './screens/tirarFoto';
 import EditarContato from './screens/EditarContato';
 import Mensagem from './screens/mensagem';
 
@@ -25,12 +25,28 @@ function HomeScreen({ navigation }) {
   const [location, setLocation] = useState(null);
 
   useEffect(() => {
+    const checkName = async () => {
+      try {
+        const storedName = await AsyncStorage.getItem('name');
+        console.log('Stored name:', storedName);  // Debugging
+        if (storedName) {
+          setName(storedName);  // Define o nome no estado se estiver salvo
+          navigation.navigate('HomePage');
+          console.log(name)
+        }
+      } catch (error) {
+        console.error('Erro ao verificar o nome:', error);
+      }
+    };
+
+    checkName();
+
     const intervalId = setInterval(() => {
       updateLocation();
     }, 60000); // Atualiza a localização a cada 1 minuto
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [navigation]);
 
   const updateLocation = async () => {
     try {
@@ -70,15 +86,22 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const handleNameSubmit = async () => {
+    try {
+      // Salva o nome no AsyncStorage
+      await AsyncStorage.setItem('name', name);
+      console.log('Nome salvo:', name);  // Debugging
+      navigation.navigate('HomePage');
+    } catch (error) {
+      console.error('Erro ao salvar o nome:', error);
+    }
+  };
+
   return (
     <View style={{ alignItems: 'center', backgroundColor: '#fff', paddingTop:60 }}>
-
-      
-
       <Image source={require('./viva.jpeg')} style={{ width: '56%', height: 90 }} />
       <Image source={require('./logo.jpeg')} style={{ width: '100%', height: 250 }} />
 
-     
       <Text style={{ textAlign: 'center', marginTop: '10%', color: '#000000B2', fontSize: 12 }}>
         Vamos nos conhecer!
       </Text>
@@ -101,10 +124,7 @@ function HomeScreen({ navigation }) {
       />
 
       <TouchableOpacity
-        onPress={() => {
-          console.log('Nome do usuário:', name);
-          navigation.navigate('HomePage');
-        }}
+        onPress={handleNameSubmit}
         style={{
           alignItems: 'center',
           width: '45%',
@@ -150,13 +170,12 @@ function HomeStackScreen() {
   return (
     <>
       <StatusBar backgroundColor="#F9497D" barStyle="light-content" />
-
       <HomeStack.Navigator
         screenOptions={{
           headerShown: false, // Remove o cabeçalho em todas as telas
         }}
       >
-       <HomeStack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
+        <HomeStack.Screen name="Home" component={HomeScreen} options={{ title: '' }} />
         <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
         <HomeStack.Screen name="SOS" component={SosScreen} options={{ headerShown: false }} />
         <HomeStack.Screen name="calendario" component={Calendario} options={{ headerShown: false }} />
@@ -169,9 +188,7 @@ function HomeStackScreen() {
         <HomeStack.Screen name="perguntas" component={FAQScreen} options={{ headerShown: false }} />
         <HomeStack.Screen name="cofre" component={Cofre} options={{ headerShown: false }} />
         <HomeStack.Screen name="galeria" component={Galeria} options={{ headerShown: false }} />
-        <HomeStack.Screen name="tirarFoto" component={TirarFoto} options={{ headerShown: false }} />
         <HomeStack.Screen name="Mensagem" component={Mensagem} options={{ headerShown: false }} />
-
       </HomeStack.Navigator>
     </>
   );
